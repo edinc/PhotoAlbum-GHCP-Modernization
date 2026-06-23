@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Tasks template for the PhotoAlbum Azure modernization plan based on assessment report report-20260623132400.",
+  "tasks": [
+    {
+      "type": "upgrade",
+      "id": "001-upgrade-dotnet-to-net10",
+      "description": "Upgrade PhotoAlbum to the latest .NET LTS baseline. Addresses issues: Project's target framework(s) needs to be changed, Binary incompatible for selected .NET version, NuGet package upgrade is recommended, Behavioral change in selected .NET version, NuGet package is deprecated.",
+      "reason": "The assessment report proposes moving the application from net9.0 to net10.0 before Azure-focused migration work so later service migrations can build on a supported runtime baseline.",
+      "requirements": "Upgrade PhotoAlbum and PhotoAlbum.Tests from net9.0 to net10.0, update affected package references to compatible versions, and resolve the assessed API compatibility findings while preserving current gallery behavior.",
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "002-transform-local-files-to-azure-blob",
+      "description": "Migrate photo binary storage from local uploads to Azure Blob Storage. Addresses issues: Local or network IO operations detected.",
+      "reason": "Photo upload, retrieval, and deletion currently depend on the local file system, which is not cloud-friendly for scaled Azure hosting.",
+      "requirements": "Replace local photo file storage in the PhotoAlbum application with Azure Blob Storage while preserving upload, retrieval, and delete workflows, maintaining metadata consistency, and using managed identity-based authentication for Azure access.",
+      "dependencies": [
+        "001-upgrade-dotnet-to-net10"
+      ],
+      "skills": [
+        {
+          "name": "migration-azure-storage-blob",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "003-transform-localdb-to-azure-sql",
+      "description": "Migrate photo metadata persistence from SQL Server LocalDB to Azure SQL Database. Addresses issues: SQL database connection detected, Connection string is detected, Windows authentication detected, Connection strings without configuration builders detected.",
+      "reason": "The application stores metadata in a LocalDB-backed SQL Server configuration that depends on local machine connectivity and local connection settings.",
+      "requirements": "Migrate PhotoAlbum metadata persistence from SQL Server LocalDB to Azure SQL Database, replace local connection-string and Windows-authentication assumptions with managed identity-based access, and preserve EF Core-based photo metadata operations.",
+      "dependencies": [
+        "001-upgrade-dotnet-to-net10"
+      ],
+      "skills": [
+        {
+          "name": "migration-azure-sql-database",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "004-transform-appsettings-to-app-config",
+      "description": "Externalize non-secret application settings to Azure App Configuration. Addresses issues: Local application configuration detected.",
+      "reason": "The assessment identifies repository-local configuration values in appsettings files that should be externalized for cloud-ready configuration management.",
+      "requirements": "Move non-secret PhotoAlbum runtime settings from local appsettings files into Azure App Configuration while preserving the existing configuration shape for upload settings, logging settings, and other non-secret application values.",
+      "dependencies": [
+        "001-upgrade-dotnet-to-net10",
+        "002-transform-local-files-to-azure-blob",
+        "003-transform-localdb-to-azure-sql"
+      ],
+      "skills": [
+        {
+          "name": "migration-local-appsettings-azure-app-configuration",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "005-security-cve-remediation",
+      "description": "Scan dependencies for CVEs and remediate any supported vulnerability findings before deployment readiness work.",
+      "reason": "Every modernization plan must include security remediation so the migrated application is not advanced with known dependency vulnerabilities.",
+      "requirements": "Scan all project dependencies for known CVEs, upgrade vulnerable dependencies to the minimum patched versions, document any major-version remediation risk, and verify the project still builds and tests successfully after remediation.",
+      "dependencies": [
+        "001-upgrade-dotnet-to-net10",
+        "002-transform-local-files-to-azure-blob",
+        "003-transform-localdb-to-azure-sql",
+        "004-transform-appsettings-to-app-config"
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    }
+  ],
+  "metadata": {
+    "planName": "modernization-plan-cloud-agent",
+    "projectName": "PhotoAlbum",
+    "language": "dotnet",
+    "createdAt": "2026-06-23T15:36:07.934Z",
+    "version": "1.0"
+  }
+}
