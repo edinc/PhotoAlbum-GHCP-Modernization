@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Assessment - PhotoAlbum</title>
+<style>
+:root {
+  --bg-primary: #ffffff;
+  --bg-card: #f8f9fa;
+  --bg-page: #f0f1f3;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --text-muted: #6b7280;
+  --border-color: #d0d7de;
+  --border-light: #e1e4e8;
+  --link-color: #2563eb;
+  --color-mandatory: #E3008C;
+  --color-potential: #637CEF;
+  --color-optional: #A19F9D;
+  --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-family); font-size: 13px; color: var(--text-primary); background: var(--bg-primary); line-height: 1.5; margin: 0; padding: 0; }
+a { color: var(--link-color); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Page layout ───────────────────────────────────────────── */
+.main { margin: 0; padding: 24px 32px; background: var(--bg-primary); }
+.back-link { color: var(--text-muted); font-size: 13px; margin-bottom: 16px; display: block; }
+h1 { font-weight: 600; font-size: 20px; color: var(--text-primary); margin-bottom: 20px; }
+
+/* ── Report cards (matches VS Code .vscode-report-card) ──── */
+.report-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 4px; padding: 12px; margin-bottom: 20px; }
+.report-card h2 { font-size: 14px; font-weight: 600; margin: 0; color: var(--text-primary); }
+.report-card-body { margin-top: 16px; }
+
+/* ── Component Information (two-column) ────────────────── */
+.app-info-container { display: flex; gap: 8px; flex-wrap: wrap; }
+.app-info-column { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; }
+.app-info-row { display: flex; align-items: baseline; }
+.app-info-label { width: 136px; flex-shrink: 0; font-weight: 600; color: var(--text-primary); }
+.app-info-value { flex: 1; color: var(--text-primary); }
+
+/* ── Issue Summary (pie charts + legend) ─────────────────── */
+.cards-container { display: flex; align-items: stretch; gap: 20px; flex-wrap: wrap; }
+.issue-summary-card { flex: 2; }
+.domain-summary-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-around; }
+.domain-summary-item { flex: 1; min-width: 120px; text-align: center; padding: 0 16px; border-right: 1px solid var(--border-light); }
+.domain-summary-item:last-child { border-right: none; }
+.domain-summary-item h3 { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-top: 8px; }
+.domain-summary-item .count { font-size: 12px; color: var(--text-secondary); }
+.criticality-legend { display: flex; flex-wrap: wrap; gap: 15px; padding-top: 12px; justify-content: center; }
+.criticality-legend .legend-item { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-secondary); }
+.legend-swatch { display: inline-block; width: 1em; height: 1em; border-radius: 2px; }
+
+/* ── Issue list tables ───────────────────────────────────── */
+.issue-section { margin-top: 20px; }
+.issue-section h2 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.issue-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 600px; }
+.issue-table th { text-align: left; text-transform: uppercase; font-weight: 600; font-size: calc(13px * 0.875); padding: 6px 8px; background: var(--bg-card); border-bottom: 1px solid var(--border-color); color: var(--text-secondary); position: sticky; top: 0; z-index: 1; }
+.issue-table td { padding: 12px 8px; border-bottom: 1px solid var(--border-light); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+.col-issue { width: 55%; }
+.col-criticality { width: 25%; }
+.col-storypoint { width: 20%; }
+
+/* ── Target dropdown ─────────────────────────────────────── */
+.target-select-container { margin: 4px 0 16px 0; display: flex; align-items: center; gap: 8px; }
+.target-select-container label { font-weight: 600; color: var(--text-primary); font-size: 14px; }
+.target-select-container select { font-family: var(--font-family); font-size: 13px; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); cursor: pointer; }
+
+/* ── Filter bar ──────────────────────────────────────────── */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0 8px 0; align-items: center; }
+.multi-select { position: relative; display: inline-block; min-width: 140px; }
+.multi-select-btn { font-family: var(--font-family); font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); cursor: pointer; width: 100%; text-align: left; position: relative; white-space: nowrap; }
+.multi-select-btn::after { content: '\25BE'; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--text-secondary); }
+.multi-select-dropdown { display: none; position: absolute; top: 100%; left: 0; min-width: 100%; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; margin-top: 2px; }
+.multi-select.open .multi-select-dropdown { display: block; }
+.multi-select-option { display: flex; align-items: center; gap: 6px; padding: 5px 10px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+.multi-select-option:hover { background: var(--bg-secondary); }
+.multi-select-option input[type=checkbox] { margin: 0; cursor: pointer; }
+.clear-filters { font-size: 12px; color: var(--link-color); cursor: pointer; margin-left: 4px; }
+
+/* ── Criticality labels (colored square + text) ──────────── */
+.crit-label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; }
+.crit-square { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.crit-square-mandatory { background: var(--color-mandatory); }
+.crit-square-potential { background: var(--color-potential); }
+.crit-square-optional { background: var(--color-optional); }
+
+/* ── Expandable rows ─────────────────────────────────────── */
+.expand-btn { background: none; border: none; cursor: pointer; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 11px; transition: transform 0.15s; padding: 0; vertical-align: middle; flex-shrink: 0; }
+.expand-btn.open { transform: rotate(90deg); }
+.issue-title-cell { display: flex; align-items: center; gap: 4px; }
+.detail-row td { padding: 0; border-bottom: 1px solid var(--border-light); white-space: normal; overflow: visible; text-overflow: clip; }
+.detail-content { display: flex; gap: 0; padding: 8px 8px 8px 32px; min-width: 0; }
+.file-list { flex: 0 0 50%; min-width: 0; overflow: hidden; }
+.file-list table { width: 100%; border-collapse: collapse; }
+.file-list th { font-size: calc(13px * 0.875); text-transform: uppercase; font-weight: 600; color: var(--text-secondary); padding: 6px 8px; border-bottom: 1px solid var(--border-color); text-align: left; height: 32px; }
+.file-list td { font-size: 13px; padding: 6px 8px; border-bottom: 1px solid var(--border-light); color: var(--text-primary); }
+.file-list .file-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; display: block; }
+.file-list .position { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
+.explanation-panel { flex: 1; padding-left: 16px; min-width: 0; overflow-wrap: break-word; word-wrap: break-word; }
+.explanation-panel h4 { font-size: calc(13px * 0.875); text-transform: uppercase; font-weight: 600; color: var(--text-secondary); padding: 6px 0; border-bottom: 1px solid var(--border-color); height: 32px; margin: 0; }
+.explanation-panel p { font-size: 13px; padding: 8px 0; color: var(--text-primary); line-height: 1.6; white-space: normal; word-break: break-word; }
+
+/* ── Experimental badge ──────────────────────────────────── */
+.badge-experimental { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #fef9c3; color: #854d0e; vertical-align: middle; margin-left: 8px; cursor: default; }
+
+/* ── Footer ──────────────────────────────────────────────── */
+.footer { text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 13px; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 800px) {
+  .main { padding: 16px; }
+  .app-info-container { flex-direction: column; }
+  .domain-summary-container { flex-direction: column; }
+  .domain-summary-item { border-right: none; border-bottom: 1px solid var(--border-light); padding-bottom: 12px; }
+  .detail-content { flex-direction: column; }
+  .file-list { flex: none; width: 100%; }
+  .explanation-panel { padding-left: 0; padding-top: 8px; }
+}
+/* ── Tab navigation ──────────────────────────────────────── */
+.tab-nav { display: flex; gap: 0; border-bottom: 1px solid var(--border-color); margin-bottom: 28px; flex-wrap: wrap; }
+.tab-btn { background: none; border: none; border-bottom: 2px solid transparent; padding: 10px 18px; font-size: 13px; font-family: var(--font-family); color: var(--text-secondary); cursor: pointer; margin-bottom: -1px; white-space: nowrap; position: relative; }
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: var(--link-color); border-bottom-color: var(--link-color); font-weight: 600; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Tooltip on tab ──────────────────────────────────────── */
+.tab-btn[data-tooltip]::after { content: attr(data-tooltip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #24292f; color: #ffffff; font-size: 12px; font-weight: 400; padding: 6px 10px; border-radius: 4px; white-space: normal; width: max-content; max-width: 260px; text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 100; }
+.tab-btn[data-tooltip]:hover::after { opacity: 1; }
+
+/* ── Fact content — prose column ─────────────────────────── */
+.fact-content { max-width: 860px; margin: 0 auto; line-height: 1.75; color: var(--text-primary); font-size: 14px; }
+.fact-content h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; color: var(--text-primary); letter-spacing: -0.01em; }
+.fact-content h1 + p { margin-top: 6px; color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; }
+.fact-content h2 { font-size: 17px; font-weight: 700; margin: 36px 0 12px 0; padding-bottom: 6px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); letter-spacing: -0.01em; }
+.fact-content h3 { font-size: 14px; font-weight: 700; margin: 24px 0 8px 0; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em; font-size: 12px; color: var(--text-secondary); }
+.fact-content p { margin: 10px 0; color: var(--text-primary); }
+.fact-content ul, .fact-content ol { margin: 10px 0 10px 22px; }
+.fact-content li { margin: 5px 0; }
+.fact-content a { color: var(--link-color); }
+.fact-content a:hover { text-decoration: underline; }
+
+/* ── Fact tables ─────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; margin: 16px 0; }
+.fact-content table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 13px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); }
+.fact-content thead { background: var(--bg-card); }
+.fact-content th { text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 14px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); }
+.fact-content td { padding: 9px 14px; border-bottom: 1px solid var(--border-light); vertical-align: top; color: var(--text-primary); }
+.fact-content tr:last-child td { border-bottom: none; }
+.fact-content tbody tr:hover { background: #f6f8fa; }
+
+/* ── Fact code ───────────────────────────────────────────── */
+.fact-content code { font-family: var(--font-mono); font-size: 12px; background: #f0f1f3; padding: 2px 6px; border-radius: 4px; color: #c7254e; }
+.fact-content pre { background: #f6f8fa; border: 1px solid var(--border-light); border-radius: 6px; padding: 14px 16px; overflow-x: auto; margin: 14px 0; }
+.fact-content pre code { background: none; color: var(--text-primary); padding: 0; border-radius: 0; }
+.fact-content hr { border: none; border-top: 1px solid var(--border-light); margin: 28px 0; }
+.fact-content strong { font-weight: 600; }
+.fact-content em { font-style: italic; }
+.fact-content blockquote { border-left: 3px solid var(--border-color); margin: 12px 0; padding: 4px 16px; color: var(--text-secondary); }
+.fact-unavailable { padding: 32px 0; }
+.fact-unavailable h3 { font-size: 16px; font-weight: 600; color: var(--text-primary); text-transform: none; letter-spacing: 0; margin: 0 0 12px 0; }
+.fact-unavailable p { margin: 0 0 8px 0; color: var(--text-secondary); }
+.fact-unavailable ol, .fact-unavailable ul { margin: 0 0 0 22px; color: var(--text-primary); }
+.fact-unavailable li { margin: 6px 0; }
+
+/* ── Mermaid diagram card ─────────────────────────────────── */
+.mermaid { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 8px; padding: 24px 16px; margin: 20px 0; overflow-x: auto; text-align: center; cursor: pointer; position: relative; }
+.mermaid:hover { border-color: var(--border-color); }
+.mermaid svg { max-width: 100%; height: auto !important; display: inline-block; }
+.mermaid-zoom-hint { position: absolute; top: 8px; right: 10px; font-size: 11px; color: var(--text-muted); opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+.mermaid:hover .mermaid-zoom-hint { opacity: 1; }
+
+/* ── Diagram lightbox ────────────────────────────────────── */
+.diagram-lightbox { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.7); backdrop-filter: blur(2px); align-items: center; justify-content: center; cursor: zoom-out; padding: 48px 32px; }
+.diagram-lightbox.open { display: flex; }
+.diagram-lightbox-inner { background: #ffffff; border-radius: 10px; padding: 32px; width: 88vw; max-height: 88vh; overflow: hidden; cursor: default; box-shadow: 0 24px 64px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; }
+.diagram-lightbox-inner svg { width: 100% !important; height: auto !important; max-height: 76vh; display: block; }
+.diagram-lightbox-close { position: fixed; top: 20px; right: 24px; background: #ffffff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 1001; }
+.diagram-lightbox-close:hover { background: var(--bg-card); }
+.diagram-lightbox-hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.55); color: #ffffff; font-size: 12px; padding: 6px 14px; border-radius: 20px; pointer-events: none; white-space: nowrap; z-index: 1001; }
+</style>
+<script>
+window.__mermaidPending = [];
+window.__mermaidReady = false;
+window.__renderMermaidIn = function(container) {
+  if (container) { window.__mermaidPending.push(container); }
+};
+</script>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({ startOnLoad: false, theme: 'default', flowchart: { useMaxWidth: true }, sequence: { useMaxWidth: true } });
+
+window.__renderMermaidIn = function(container) {
+  var nodes = container ? container.querySelectorAll('.mermaid:not([data-processed])') : [];
+  if (nodes.length > 0) {
+    mermaid.run({ nodes: Array.from(nodes) }).then(function() {
+      nodes.forEach(function(node) {
+        if (!node.querySelector('.mermaid-zoom-hint')) {
+          var hint = document.createElement('span');
+          hint.className = 'mermaid-zoom-hint';
+          hint.textContent = 'Click to expand';
+          node.appendChild(hint);
+        }
+      });
+    });
+  }
+};
+
+var drained = new Set();
+(window.__mermaidPending || []).forEach(function(c) {
+  if (!drained.has(c)) { drained.add(c); window.__renderMermaidIn(c); }
+});
+window.__mermaidPending = [];
+window.__mermaidReady = true;
+
+function renderActivePanels() {
+  document.querySelectorAll('.tab-panel.active').forEach(function(p) {
+    if (!drained.has(p)) { drained.add(p); window.__renderMermaidIn(p); }
+  });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', renderActivePanels);
+} else {
+  renderActivePanels();
+}
+</script>
+</head><body>
+<div id="diagram-lightbox" class="diagram-lightbox" role="dialog" aria-modal="true">
+  <button class="diagram-lightbox-close" id="diagram-lightbox-close" aria-label="Close">&#x2715;</button>
+  <div class="diagram-lightbox-hint">Scroll to zoom &nbsp;&middot;&nbsp; Drag to pan &nbsp;&middot;&nbsp; Double-click to reset</div>
+  <div class="diagram-lightbox-inner" id="diagram-lightbox-inner"></div>
+</div>
+<div class="main">
+<h1>PhotoAlbum</h1>
+<div class="report-card">
+  <h2>Component Information</h2>
+  <div class="report-card-body">
+    <div class="app-info-container">
+      <div class="app-info-column">
+        <div class="app-info-row"><span class="app-info-label">Component Name</span><span class="app-info-value">PhotoAlbum</span></div>
+        <div class="app-info-row"><span class="app-info-label">Effort</span><span class="app-info-value" id="effort-display">M (total story points: 24)</span></div>
+      </div>
+      <div class="app-info-column">
+        <div class="app-info-row"><span class="app-info-label">Build Tools</span><span class="app-info-value">MSBuild</span></div>
+        <div class="app-info-row"><span class="app-info-label">Frameworks</span><span class="app-info-value">net9.0</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="tab-issues" data-tooltip="Issues detected in the source code">Issues</button>
+  <button class="tab-btn" data-tab="tab-arch" data-tooltip="How the app&#x27;s layers connect — from UI to data.">Architecture</button>
+  <button class="tab-btn" data-tab="tab-api" data-tooltip="Endpoints exposed by this app and how services communicate.">API Contracts</button>
+  <button class="tab-btn" data-tab="tab-config" data-tooltip="Environment settings, runtime profiles, and deployment manifests.">Configuration</button>
+  <button class="tab-btn" data-tab="tab-workflows" data-tooltip="Domain entities and the core flows users move through.">Business Workflows</button>
+  <button class="tab-btn" data-tab="tab-deps" data-tooltip="Libraries and frameworks this app depends on, grouped by category.">Dependencies</button>
+  <button class="tab-btn" data-tab="tab-data" data-tooltip="Database schema, entity relationships, and persistence behavior.">Data Model</button>
+</nav>
+<div id="tab-issues" class="tab-panel active">
+<div class="target-select-container">
+  <label for="target-select">Target Compute Service:</label>
+  <select id="target-select" onchange="onTargetChange(this.value)">
+    <option value="AppService.Windows">Azure App Service</option>
+    <option value="AppService.Linux">Azure Kubernetes Service</option>
+    <option value="AKS.Linux">Azure Container Apps</option>
+    <option value="AKS.Windows">Azure App Service Container</option>
+    <option value="ACA">Azure App Service Managed Instance</option>
+  </select>
+</div>
+<div class="report-card">
+  <h2>Issue Summary</h2>
+  <div class="report-card-body">
+    <div class="domain-summary-container" id="donut-container">
+      <div class="domain-summary-item">
+<svg viewBox="0 0 100 100" width="100" height="100" style="display:block;margin:0 auto;transform:rotate(-90deg);">
+  <circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-mandatory)" stroke-width="15" stroke-dasharray="29.92 219.91" stroke-dashoffset="-0.00"/>
+  <circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-potential)" stroke-width="15" stroke-dasharray="124.16 219.91" stroke-dashoffset="-31.42"/>
+  <circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-optional)" stroke-width="15" stroke-dasharray="61.33 219.91" stroke-dashoffset="-157.08"/>
+</svg>
+
+        <h3>Cloud Readiness</h3>
+        <div class="count">7 issues</div>
+      </div>
+      <div class="domain-summary-item">
+<svg viewBox="0 0 100 100" width="100" height="100" style="display:block;margin:0 auto;transform:rotate(-90deg);">
+  <circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-mandatory)" stroke-width="15" stroke-dasharray="86.46 219.91" stroke-dashoffset="-0.00"/>
+  <circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-potential)" stroke-width="15" stroke-dasharray="86.46 219.91" stroke-dashoffset="-87.96"/>
+  <circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-optional)" stroke-width="15" stroke-dasharray="42.48 219.91" stroke-dashoffset="-175.93"/>
+</svg>
+
+        <h3>DotNET Upgrade</h3>
+        <div class="count">5 issues</div>
+      </div>
+    </div>
+    <div class="criticality-legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--color-mandatory)"></span>Mandatory</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--color-potential)"></span>Potential</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--color-optional)"></span>Optional</div>
+    </div>
+  </div>
+</div>
+<div class="filter-bar" id="filter-bar">
+  <div class="multi-select" id="domain-ms">
+    <button class="multi-select-btn" onclick="toggleMultiSelect('domain-ms')">Domain</button>
+    <div class="multi-select-dropdown">
+      <label class="multi-select-option"><input type="checkbox" value="cloud-readiness" onchange="onMultiSelectChange('domain-ms','Domain')"/> Cloud Readiness</label>
+      <label class="multi-select-option"><input type="checkbox" value="dotnet-upgrade" onchange="onMultiSelectChange('domain-ms','Domain')"/> DotNET Upgrade</label>
+    </div>
+  </div>
+  <div class="multi-select" id="criticality-ms">
+    <button class="multi-select-btn" onclick="toggleMultiSelect('criticality-ms')">Criticality</button>
+    <div class="multi-select-dropdown">
+      <label class="multi-select-option"><input type="checkbox" value="mandatory" onchange="onMultiSelectChange('criticality-ms','Criticality')"/> Mandatory</label>
+      <label class="multi-select-option"><input type="checkbox" value="potential" onchange="onMultiSelectChange('criticality-ms','Criticality')"/> Potential</label>
+      <label class="multi-select-option"><input type="checkbox" value="optional" onchange="onMultiSelectChange('criticality-ms','Criticality')"/> Optional</label>
+    </div>
+  </div>
+  <a class="clear-filters" href="javascript:void(0)" onclick="clearAllFilters()">Clear all</a>
+</div>
+<div class="issue-section" data-domain="cloud-readiness">
+  <h2>Cloud Readiness</h2>
+  <table class="issue-table">
+    <colgroup><col class="col-issue"/><col class="col-criticality"/><col class="col-storypoint"/></colgroup>
+    <thead><tr><th>Issue Category</th><th>Criticality</th><th>Story Point</th></tr></thead>
+    <tbody>
+    <tr class="issue-row" data-criticality="mandatory" data-targets='{&quot;AppService.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;mandatory&quot;},&quot;AppService.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;mandatory&quot;},&quot;AKS.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;mandatory&quot;},&quot;AKS.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;ACA&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;mandatory&quot;},&quot;AppServiceContainer.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;mandatory&quot;},&quot;AppServiceContainer.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;mandatory&quot;},&quot;AppServiceManagedInstance.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;mandatory&quot;}}' data-default-effort="3" data-default-severity="mandatory" data-rule="Identity.0002" onclick="toggleRow('row-cloudreadiness-0', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-0">&#x276F;</button> Windows authentication detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-mandatory"></span>Mandatory</span></td>
+      <td class="sp-cell">3</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-0" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum\Web.config">PhotoAlbum\Web.config</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Your app is using windows authentication which is not supported on Azure App Service, Azure Container Apps and Azure Kubernetes Service.</p><p>Azure App Service provides built-in authentication and authorization capabilities, so you can sign in users and access data by writing minimal or no code in your web app.</p><p>Follow the link below for more information.&quot;</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="potential" data-targets='{&quot;AppService.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppService.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AKS.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AKS.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;ACA&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceContainer.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceContainer.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceManagedInstance.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;}}' data-default-effort="3" data-default-severity="potential" data-rule="Local.0003" onclick="toggleRow('row-cloudreadiness-1', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-1">&#x276F;</button> Local or network IO operations detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-potential"></span>Potential</span></td>
+      <td class="sp-cell">3</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-1" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum\Program.cs">PhotoAlbum\Program.cs</span></td><td><span class="position">Line 30</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Program.cs">PhotoAlbum\Program.cs</span></td><td><span class="position">Line 28</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Pages\PhotoFile.cshtml.cs">PhotoAlbum\Pages\PhotoFile.cshtml.cs</span></td><td><span class="position">Line 60</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Pages\PhotoFile.cshtml.cs">PhotoAlbum\Pages\PhotoFile.cshtml.cs</span></td><td><span class="position">Line 66</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Pages\PhotoFile.cshtml.cs">PhotoAlbum\Pages\PhotoFile.cshtml.cs</span></td><td><span class="position">Line 58</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Services\PhotoService.cs">PhotoAlbum\Services\PhotoService.cs</span></td><td><span class="position">Line 116</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Services\PhotoService.cs">PhotoAlbum\Services\PhotoService.cs</span></td><td><span class="position">Line 185</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Services\PhotoService.cs">PhotoAlbum\Services\PhotoService.cs</span></td><td><span class="position">Line 228</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Services\PhotoService.cs">PhotoAlbum\Services\PhotoService.cs</span></td><td><span class="position">Line 114</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Services\PhotoService.cs">PhotoAlbum\Services\PhotoService.cs</span></td><td><span class="position">Line 183</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Services\PhotoService.cs">PhotoAlbum\Services\PhotoService.cs</span></td><td><span class="position">Line 226</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Services\PhotoService.cs">PhotoAlbum\Services\PhotoService.cs</span></td><td><span class="position">Line 142</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs">PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs</span></td><td><span class="position">Line 28</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs">PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs</span></td><td><span class="position">Line 207</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs">PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs</span></td><td><span class="position">Line 121</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs">PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs</span></td><td><span class="position">Line 29</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs">PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs</span></td><td><span class="position">Line 226</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs">PhotoAlbum.Tests\Unit\Services\PhotoServiceTests.cs</span></td><td><span class="position">Line 224</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Your application has local or network IO operations.</p><p>If you are targeting Managed Instance on Azure App Service, move persistent I/O to storage mounts (Azure Files/UNC). Keep local writes to temp only; connect to external dependencies via private endpoints/VNet to reduce latency.</p><p>IO operations outside of the application folder might not be available on Azure App Service. Review and ensure IO APIs are attempting to access paths that will be available when your app is running on App Service sandbox. If you choose the containerized hosting option, your scenario still might be broken or have scalability issues.</p><p>Possible solutions:<br/>    1. Files that the application needs can be deployed with the application or put in Azure Storage. You can use Azure Storage File Shares as a drop-in replacement for on-premises file share.<br/>    2. Other services that the application depends on might need to be migrated to Azure, this way you will get the benefit of lower latency in the cloud.<br/>    3. If your application needs to depend on services that run on-premise, you can connect your Azure and local networks with ExpressRoute, Hybrid Connections, or VPN solutions.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="potential" data-targets='{&quot;AppService.Windows&quot;:{&quot;effort&quot;:1,&quot;severity&quot;:&quot;potential&quot;},&quot;AppService.Linux&quot;:{&quot;effort&quot;:1,&quot;severity&quot;:&quot;potential&quot;},&quot;AKS.Linux&quot;:{&quot;effort&quot;:1,&quot;severity&quot;:&quot;potential&quot;},&quot;AKS.Windows&quot;:{&quot;effort&quot;:1,&quot;severity&quot;:&quot;potential&quot;},&quot;ACA&quot;:{&quot;effort&quot;:1,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceContainer.Linux&quot;:{&quot;effort&quot;:1,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceContainer.Windows&quot;:{&quot;effort&quot;:1,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceManagedInstance.Windows&quot;:{&quot;effort&quot;:1,&quot;severity&quot;:&quot;potential&quot;}}' data-default-effort="1" data-default-severity="potential" data-rule="Configuration.0003" onclick="toggleRow('row-cloudreadiness-2', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-2">&#x276F;</button> Local application configuration detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-potential"></span>Potential</span></td>
+      <td class="sp-cell">1</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-2" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum\appsettings.json">PhotoAlbum\appsettings.json</span></td><td><span class="position"></span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\appsettings.json">PhotoAlbum\appsettings.json</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Local application configuration detected. Azure App Configuration can be used as a centralized, cloud-based service for application settings that are currently stored in local configuration files. Moving this configuration to Azure App Configuration can help you externalize settings from code and deployment artifacts, centralize management across environments, and enable dynamic refresh and controlled access to configuration data.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="potential" data-targets='{&quot;AppService.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppService.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AKS.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AKS.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;ACA&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceContainer.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceContainer.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceManagedInstance.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;}}' data-default-effort="3" data-default-severity="potential" data-rule="Connection.0001" onclick="toggleRow('row-cloudreadiness-3', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-3">&#x276F;</button> Connection string is detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-potential"></span>Potential</span></td>
+      <td class="sp-cell">3</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-3" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum\appsettings.json">PhotoAlbum\appsettings.json</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Connection string detected. It may not be available when your app is migrated to Azure.</p><p>Review and ensure it works from Azure. If you are connecting to a database, you might need to migrate the database to Azure. There are multiple ways to do it:<br/>    1. Migrate to Azure SQL Database for additional benefits (see the link below).<br/>    2. Consider Azure SQL Managed Instance if you need features that are not available in Azure SQL Database and you don’t want to use a VM.<br/>    3. Migrate your database servers directly to SQL Server on Azure VMs.</p><p>To assess database migration effort, you can use Azure Migrate tool, see the link below.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="potential" data-targets='{&quot;AppService.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppService.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AKS.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AKS.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;ACA&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceContainer.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceContainer.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;},&quot;AppServiceManagedInstance.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;potential&quot;}}' data-default-effort="3" data-default-severity="potential" data-rule="Database.0002" onclick="toggleRow('row-cloudreadiness-4', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-4">&#x276F;</button> SQL database connection detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-potential"></span>Potential</span></td>
+      <td class="sp-cell">3</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-4" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum\Web.config">PhotoAlbum\Web.config</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>SQL database connection detected.</p><p>Ensure the database is available/reachable on Azure.</p><p>If it is not, there are multiple ways you can move your data to Azure:<br/>    1. Migrate to Azure SQL Database.<br/>    2. Consider Azure SQL Managed Instance if you need features that are not available in Azure SQL Database and you don’t want to use a VM.<br/>    3. Migrate your database servers directly to SQL Server on Azure VMs.</p><p>To assess database migration effort, you can use Azure Migrate tool, see the link below.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="optional" data-targets='{&quot;AppService.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AppService.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AKS.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AKS.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;ACA&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AppServiceContainer.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AppServiceContainer.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AppServiceManagedInstance.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;}}' data-default-effort="3" data-default-severity="optional" data-rule="Scale.0001" onclick="toggleRow('row-cloudreadiness-5', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-5">&#x276F;</button> Static content detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-optional"></span>Optional</span></td>
+      <td class="sp-cell">3</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-5" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum\PhotoAlbum.csproj">PhotoAlbum\PhotoAlbum.csproj</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Static content detected.</p><p>Your current approach of serving static content directly might lead to increased costs, performance issues, maintenance challenges (requiring application redeployment for content changes), and security risks.</p><p>Consider moving static content to Azure Blob Storage and adding Azure CDN.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="optional" data-targets='{&quot;AppService.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AppService.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AKS.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AKS.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;ACA&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AppServiceContainer.Linux&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AppServiceContainer.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;},&quot;AppServiceManagedInstance.Windows&quot;:{&quot;effort&quot;:3,&quot;severity&quot;:&quot;optional&quot;}}' data-default-effort="3" data-default-severity="optional" data-rule="Security.0002" onclick="toggleRow('row-cloudreadiness-6', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-6">&#x276F;</button> Connection strings without configuration builders detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-optional"></span>Optional</span></td>
+      <td class="sp-cell">3</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-6" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum\Web.config">PhotoAlbum\Web.config</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Connection strings without configuration builders detected.  </p><p> Keeping connection strings directly in the app is not the best practice and might introduce security risks, increased maintenance, scalability challenges or compliance standards (such as PCI DSS, GDPR, etc.). </p><p> Instead, it is recommended to use configuration builders to get secrets from secure sources in Azure environment.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+<div class="issue-section" data-domain="dotnet-upgrade">
+  <h2>DotNET Upgrade <a href="scenarios/dotnet-version-upgrade/assessment.html" style="font-size:12px;font-weight:400;margin-left:12px;">View Details</a></h2>
+  <table class="issue-table">
+    <colgroup><col class="col-issue"/><col class="col-criticality"/><col class="col-storypoint"/></colgroup>
+    <thead><tr><th>Issue Category</th><th>Criticality</th><th>Story Point</th></tr></thead>
+    <tbody>
+    <tr class="issue-row" data-criticality="mandatory" data-targets='{}' data-default-effort="1" data-default-severity="mandatory" data-rule="Api.0001" onclick="toggleRow('row-dotnetupgrade-0', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-dotnetupgrade-0">&#x276F;</button> Binary incompatible for selected .NET version</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-mandatory"></span>Mandatory</span></td>
+      <td class="sp-cell">1</td>
+    </tr>
+    <tr class="detail-row" id="row-dotnetupgrade-0" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum\Services\PhotoService.cs">PhotoAlbum\Services\PhotoService.cs</span></td><td><span class="position">Line 30, Col 8</span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum\Program.cs">PhotoAlbum\Program.cs</span></td><td><span class="position">Line 34, Col 0</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>API is binary incompatible for selected .NET version: affects existing binaries, often requiring recompilation, because the API has changed in a way that prevents older binaries from loading or executing.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="mandatory" data-targets='{}' data-default-effort="1" data-default-severity="mandatory" data-rule="Project.0002" onclick="toggleRow('row-dotnetupgrade-1', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-dotnetupgrade-1">&#x276F;</button> Project&#x27;s target framework(s) needs to be changed</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-mandatory"></span>Mandatory</span></td>
+      <td class="sp-cell">1</td>
+    </tr>
+    <tr class="detail-row" id="row-dotnetupgrade-1" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum\PhotoAlbum.csproj">PhotoAlbum\PhotoAlbum.csproj</span></td><td><span class="position"></span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum.Tests\PhotoAlbum.Tests.csproj">PhotoAlbum.Tests\PhotoAlbum.Tests.csproj</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Project&#x27;s target framework(s) needs to be changed to the new target framework that you selected for this upgrade.</p><p>During upgrade target framework will be adjusted to corresponding platform when applicable. In some cases project would result in multiple target frameworks after the upgrade if it was using features that now have their own platforms in modern .NET frameworks (windows, iOS, Android etc).</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="potential" data-targets='{}' data-default-effort="1" data-default-severity="potential" data-rule="NuGet.0002" onclick="toggleRow('row-dotnetupgrade-2', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-dotnetupgrade-2">&#x276F;</button> NuGet package upgrade is recommended</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-potential"></span>Potential</span></td>
+      <td class="sp-cell">1</td>
+    </tr>
+    <tr class="detail-row" id="row-dotnetupgrade-2" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum\PhotoAlbum.csproj">PhotoAlbum\PhotoAlbum.csproj</span></td><td><span class="position"></span></td></tr>
+            <tr><td><span class="file-path" title="PhotoAlbum.Tests\PhotoAlbum.Tests.csproj">PhotoAlbum.Tests\PhotoAlbum.Tests.csproj</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>NuGet package upgrade is recommended for selected target framework.</p><p>Standard .NET packages are recommended to have versions matching version of .NET that project targets.</p><p>Some other packages also are known to work better for selected target frameworks.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="potential" data-targets='{}' data-default-effort="1" data-default-severity="potential" data-rule="Api.0003" onclick="toggleRow('row-dotnetupgrade-3', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-dotnetupgrade-3">&#x276F;</button> Behavioral change in selected .NET version</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-potential"></span>Potential</span></td>
+      <td class="sp-cell">1</td>
+    </tr>
+    <tr class="detail-row" id="row-dotnetupgrade-3" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum\Program.cs">PhotoAlbum\Program.cs</span></td><td><span class="position">Line 54, Col 4</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>API has a behavioral change in selected .NET version: code and binaries may behave differently at runtime without needing recompilation, but the new behavior might be undesirable and require updates.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="optional" data-targets='{}' data-default-effort="1" data-default-severity="optional" data-rule="NuGet.0005" onclick="toggleRow('row-dotnetupgrade-4', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-dotnetupgrade-4">&#x276F;</button> NuGet package is deprecated</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-optional"></span>Optional</span></td>
+      <td class="sp-cell">1</td>
+    </tr>
+    <tr class="detail-row" id="row-dotnetupgrade-4" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="PhotoAlbum.Tests\PhotoAlbum.Tests.csproj">PhotoAlbum.Tests\PhotoAlbum.Tests.csproj</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>NuGet package is deprecated.</p><p>Go to its documentation and if there is a guidance for replacement of functionality provided by this package.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+</div><!-- #tab-issues -->
+<div id="tab-arch" class="tab-panel">
+  <div class="fact-content"><h1 id="architecture-diagram">Architecture Diagram</h1>
+<p>PhotoAlbum is a single deployable ASP.NET Core 9 Razor Pages application. The repository shows a classic monolithic web app where Razor Pages call an in-process photo service that persists metadata to SQL Server and stores image binaries on the local file system.</p>
+<h2 id="application-architecture">Application Architecture</h2>
+<div class="mermaid">
+flowchart TD
+    subgraph Client["Client Layer"]
+        Browser["Web Browser"]
+    end
+
+    subgraph Presentation["Presentation Layer - ASP.NET Core 9 Razor Pages"]
+        RazorPages["Razor Pages UI"]
+        UploadJs["upload.js"]
+        StaticAssets["Static assets and Bootstrap 5.3 CDN"]
+    end
+
+    subgraph Application["Application Layer"]
+        Pipeline["Program.cs middleware pipeline"]
+        PhotoSvc["PhotoService"]
+        ImageProc["ImageSharp image inspection"]
+    end
+
+    subgraph Data["Data Layer"]
+        EFCore["EF Core 9 DbContext"]
+        SqlDb[("SQL Server PhotoAlbumDb")]
+        FileStore[("wwwroot/uploads file store")]
+    end
+
+    Browser -->|"GET page requests"| RazorPages
+    Browser -->|"drag and drop upload"| UploadJs
+    UploadJs -->|"POST multipart upload"| RazorPages
+    Browser -->|"GET photo binary"| RazorPages
+    StaticAssets -->|"styles and scripts"| Browser
+    RazorPages -->|"executed inside"| Pipeline
+    RazorPages -->|"delegates gallery operations"| PhotoSvc
+    PhotoSvc -->|"extract dimensions"| ImageProc
+    PhotoSvc -->|"save and delete image files"| FileStore
+    PhotoSvc -->|"query and persist metadata"| EFCore
+    EFCore -->|"SQL operations"| SqlDb
+</div>
+<h3 id="technology-stack-summary">Technology Stack Summary</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Layer</th><th>Technology</th><th>Version</th><th>Purpose</th>
+</tr></thead><tbody>
+<tr><td>Presentation</td><td>ASP.NET Core Razor Pages</td><td>9.0</td><td>Server-rendered UI and Razor Page handlers</td></tr>
+<tr><td>Presentation</td><td>JavaScript upload client</td><td>Repository source</td><td>Drag-and-drop multi-file upload and JSON response handling</td></tr>
+<tr><td>Presentation</td><td>Bootstrap via CDN</td><td>5.3.0</td><td>Layout and responsive styling</td></tr>
+<tr><td>Application</td><td>Custom <code>PhotoService</code></td><td>Repository source</td><td>Upload, retrieval, metadata extraction, and deletion orchestration</td></tr>
+<tr><td>Persistence</td><td>Entity Framework Core with SQL Server provider</td><td>9.0.9</td><td>ORM and database access</td></tr>
+<tr><td>Storage</td><td>SQL Server LocalDB / SQL Server</td><td>Repository config</td><td>Stores photo metadata</td></tr>
+<tr><td>Storage</td><td>Local file system under <code>wwwroot/uploads</code></td><td>Repository config</td><td>Stores uploaded image binaries</td></tr>
+<tr><td>Utility</td><td>SixLabors.ImageSharp</td><td>3.1.11</td><td>Reads image dimensions during upload</td></tr>
+</tbody></table></div>
+<h3 id="data-storage-external-services">Data Storage & External Services</h3>
+<p>The running application uses two storage mechanisms: SQL Server stores photo metadata through EF Core, and <code>wwwroot/uploads</code> stores the actual image files. No cache, message broker, or outbound API integration is implemented in the application code; Azure deployment files exist in the repo, but the app logic itself remains a single-process web application.</p>
+<h3 id="key-architectural-decisions">Key Architectural Decisions</h3>
+<ul>
+<li>Uses a simple monolithic structure: Razor Pages call an in-process <code>IPhotoService</code> implementation instead of separate APIs or background workers.</li>
+<li>Splits binary storage from metadata storage: image files are written to disk while photo metadata is persisted in SQL Server.</li>
+<li>Applies EF Core migrations during startup and creates the uploads directory before serving requests, making storage readiness part of application boot.</li>
+</ul>
+<h2 id="component-relationships">Component Relationships</h2>
+<div class="mermaid">
+flowchart LR
+    subgraph Presentation
+        IndexPage["IndexModel and Index.cshtml"]
+        DetailPage["DetailModel and Detail.cshtml"]
+        PhotoFilePage["PhotoFileModel"]
+        ErrorPages["PrivacyModel and ErrorModel"]
+    end
+
+    subgraph Business["Business Logic"]
+        PhotoContract["IPhotoService"]
+        PhotoService["PhotoService"]
+    end
+
+    subgraph DataAccess["Data Access"]
+        DbContext["PhotoAlbumContext"]
+        PhotoEntity["Photo entity"]
+    end
+
+    subgraph Infrastructure
+        ProgramPipe["Program.cs pipeline"]
+        UploadDir["Uploads directory"]
+        ImageSharp["ImageSharp"]
+        SqlServer["SQL Server"]
+        Logging["ASP.NET Core logging"]
+    end
+
+    ProgramPipe -.->|"hosts"| Presentation
+    IndexPage -->|"load gallery and upload files"| PhotoContract
+    DetailPage -->|"load detail and delete"| PhotoContract
+    PhotoFilePage -->|"resolve file by photo id"| PhotoContract
+    PhotoContract -->|"implemented by"| PhotoService
+    PhotoService -->|"query and save"| DbContext
+    DbContext -->|"tracks"| PhotoEntity
+    DbContext -->|"reads and writes"| SqlServer
+    PhotoService -->|"writes and deletes files"| UploadDir
+    PhotoService -->|"reads dimensions"| ImageSharp
+    Logging -.->|"records failures and events"| PhotoService
+    Logging -.->|"records request issues"| Presentation
+    ErrorPages -.->|"handled by"| ProgramPipe
+</div>
+<h3 id="component-inventory">Component Inventory</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Component</th><th>Layer</th><th>Type</th><th>Responsibility</th>
+</tr></thead><tbody>
+<tr><td><code>IndexModel</code> and <code>Index.cshtml</code></td><td>Presentation</td><td>Razor Page and PageModel</td><td>Renders the gallery and handles multipart upload requests</td></tr>
+<tr><td><code>DetailModel</code> and <code>Detail.cshtml</code></td><td>Presentation</td><td>Razor Page and PageModel</td><td>Displays one photo, metadata, navigation, and delete action</td></tr>
+<tr><td><code>PhotoFileModel</code></td><td>Presentation</td><td>Razor Page handler</td><td>Returns the stored image bytes by photo id</td></tr>
+<tr><td><code>PrivacyModel</code> and <code>ErrorModel</code></td><td>Presentation</td><td>Razor Pages</td><td>Static privacy page and error rendering</td></tr>
+<tr><td><code>IPhotoService</code></td><td>Business Logic</td><td>Service contract</td><td>Defines gallery retrieval, upload, lookup, and delete operations</td></tr>
+<tr><td><code>PhotoService</code></td><td>Business Logic</td><td>Scoped service</td><td>Validates uploads, extracts dimensions, coordinates file and database persistence, and deletes photos</td></tr>
+<tr><td><code>PhotoAlbumContext</code></td><td>Data Access</td><td>EF Core DbContext</td><td>Exposes the <code>Photos</code> set and configures persistence metadata</td></tr>
+<tr><td><code>Photo</code></td><td>Data Access</td><td>Entity</td><td>Represents persisted photo metadata and file location</td></tr>
+<tr><td><code>Program.cs</code> pipeline</td><td>Infrastructure</td><td>Startup and middleware</td><td>Configures DI, EF Core, static files, migrations, and Razor Pages routing</td></tr>
+<tr><td>Uploads directory</td><td>Infrastructure</td><td>File storage</td><td>Stores the physical image files referenced by <code>Photo.StoredFileName</code></td></tr>
+<tr><td>SQL Server</td><td>Infrastructure</td><td>Database</td><td>Persists photo metadata rows</td></tr>
+<tr><td>ImageSharp</td><td>Infrastructure</td><td>Library component</td><td>Reads image dimensions during upload processing</td></tr>
+</tbody></table></div></div>
+</div>
+<div id="tab-api" class="tab-panel">
+  <div class="fact-content"><h1 id="api-service-communication-contracts">API & Service Communication Contracts</h1>
+<p>The repository exposes a small HTTP surface centered on Razor Pages plus one JSON upload handler and one binary photo endpoint. Communication is entirely synchronous and in-process: browser requests hit page handlers, which call a scoped service and then local storage and SQL persistence.</p>
+<h2 id="service-catalog">Service Catalog</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Port</th><th>Category</th><th>Purpose</th>
+</tr></thead><tbody>
+<tr><td><code>PhotoAlbum</code></td><td><code>5134</code> HTTP and <code>7055</code> HTTPS in local launch settings; <code>8080</code> in the container definition</td><td>API Layer</td><td>Serves gallery pages, upload/delete handlers, and indirect photo file delivery from a single ASP.NET Core process</td></tr>
+</tbody></table></div>
+<h2 id="api-endpoints-inventory">API Endpoints Inventory</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Method</th><th>Path</th><th>Request Type</th><th>Response Type</th>
+</tr></thead><tbody>
+<tr><td><code>PhotoAlbum</code></td><td>GET</td><td><code>/</code></td><td>None</td><td>HTML gallery page populated from <code>List<Photo></code></td></tr>
+<tr><td><code>PhotoAlbum</code></td><td>POST</td><td><code>/Index?handler=Upload</code></td><td><code>multipart/form-data</code> with repeated <code>files</code> values mapped to <code>List<IFormFile></code></td><td>JSON object with <code>success</code>, <code>uploadedPhotos[]</code>, and <code>failedUploads[]</code>; returns <code>400</code> when no files are provided</td></tr>
+<tr><td><code>PhotoAlbum</code></td><td>GET</td><td><code>/Detail/{id?}</code></td><td>Path parameter <code>id:int?</code></td><td>HTML detail page for one photo, or <code>404</code> if not found</td></tr>
+<tr><td><code>PhotoAlbum</code></td><td>POST</td><td><code>/Detail/{id?}?handler=Delete</code></td><td>Path parameter <code>id:int</code>; antiforgery form post</td><td>Redirect to <code>/Index</code> on success, or redirect back to detail page with <code>TempData["Error"]</code> on failure</td></tr>
+<tr><td><code>PhotoAlbum</code></td><td>GET</td><td><code>/photo/{id:int}</code></td><td>Path parameter <code>id:int</code></td><td>Binary file response using the stored MIME type, or <code>404</code>/<code>500</code></td></tr>
+<tr><td><code>PhotoAlbum</code></td><td>GET</td><td><code>/Privacy</code></td><td>None</td><td>Static HTML page</td></tr>
+<tr><td><code>PhotoAlbum</code></td><td>GET</td><td><code>/Error</code></td><td>None</td><td>HTML error page</td></tr>
+</tbody></table></div>
+<h2 id="management-observability-endpoints">Management & Observability Endpoints</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Endpoint</th><th>Custom Metrics (if any)</th>
+</tr></thead><tbody>
+<tr><td><code>PhotoAlbum</code></td><td>None detected in repository</td><td>None detected</td></tr>
+</tbody></table></div>
+<h2 id="dtos-contracts">DTOs & Contracts</h2>
+<p>The app does not define separate gateway contracts or external service DTOs because it is a single deployable web application. The main contract types visible in the repository are:</p>
+<ul>
+<li><code>Photo</code>: service-level domain entity used by page models and views for gallery, detail, and file lookup flows. Field-level persistence details are documented in <code>data-architecture.md</code>.</li>
+<li><code>UploadResult</code>: mutable service result object that carries upload success status, created photo id, original file name, and an optional error message.</li>
+<li>Anonymous JSON upload response shape from <code>IndexModel.OnPostUploadAsync</code>: contains <code>success</code>, <code>uploadedPhotos</code>, and <code>failedUploads</code>; this is the only explicit JSON API contract in the app.</li>
+</ul>
+<p>No immutable C# records, OpenAPI documents, Swashbuckle setup, protobuf schemas, or GraphQL schemas were found. JSON serialization appears to use the default ASP.NET Core <code>JsonResult</code> pipeline, which implies the built-in <code>System.Text.Json</code> stack unless overridden elsewhere.</p>
+<h2 id="communication-patterns">Communication Patterns</h2>
+<p>All request handling is synchronous from the caller perspective: the browser invokes Razor Page routes, page handlers call <code>IPhotoService</code>, and <code>PhotoService</code> performs direct EF Core and file-system work inside the same process. There is no asynchronous messaging, no inter-service REST or gRPC communication, no API gateway, no service discovery, and no client-side load balancing in the repository.</p>
+<p>No retry, circuit-breaker, timeout, or bulkhead libraries are configured. Startup order only matters insofar as the app creates the uploads directory and runs EF Core migrations before it begins serving requests; request availability therefore depends on SQL connectivity at startup. Security posture is minimal: HTTPS redirection is enabled, HSTS is enabled outside development, upload and delete forms include antiforgery tokens, but no authentication or authorization is configured, so all routes are effectively public.</p>
+<h2 id="service-technology-matrix">Service Technology Matrix</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Web</th><th>Data Access</th><th>Discovery</th><th>Gateway</th><th>Actuator</th><th>Cache</th><th>Metrics</th>
+</tr></thead><tbody>
+<tr><td><code>PhotoAlbum</code></td><td>Razor Pages</td><td>EF Core with SQL Server provider</td><td>None</td><td>None</td><td>None</td><td>None</td><td>None</td></tr>
+</tbody></table></div>
+<h2 id="service-communication-sequence">Service Communication Sequence</h2>
+<div class="mermaid">
+sequenceDiagram
+    participant Browser
+    participant IndexPage as "IndexModel"
+    participant PhotoSvc as "PhotoService"
+    participant Img as "ImageSharp"
+    participant Files as "Uploads directory"
+    participant DB as "SQL Server"
+
+    Browser->>IndexPage: POST /Index?handler=Upload with files
+    IndexPage->>PhotoSvc: UploadPhotoAsync(file)
+    alt File type or size invalid
+        PhotoSvc-->>IndexPage: UploadResult failure
+        IndexPage-->>Browser: 200 JSON with failedUploads
+    else File accepted
+        PhotoSvc->>Img: Load image stream and inspect dimensions
+        Img-->>PhotoSvc: width and height or inspection failure
+        PhotoSvc->>Files: Save physical image file
+        PhotoSvc->>DB: Insert Photo metadata
+        alt Database save succeeds
+            DB-->>PhotoSvc: Photo id assigned
+            PhotoSvc-->>IndexPage: UploadResult success
+            IndexPage->>PhotoSvc: GetAllPhotosAsync()
+            PhotoSvc->>DB: Query newest photos
+            DB-->>PhotoSvc: Photo list
+            PhotoSvc-->>IndexPage: Photo list
+            IndexPage-->>Browser: 200 JSON with uploadedPhotos
+        else Database save fails
+            PhotoSvc->>Files: Delete saved file for rollback
+            PhotoSvc-->>IndexPage: UploadResult failure
+            IndexPage-->>Browser: 200 JSON with failedUploads
+        end
+    end
+</div></div>
+</div>
+<div id="tab-config" class="tab-panel">
+  <div class="fact-content"><h1 id="configuration-externalized-settings-inventory">Configuration & Externalized Settings Inventory</h1>
+<p>The repository uses a small set of configuration sources centered on <code>appsettings</code>, launch profiles, Azure deployment templates, and a user-secrets identifier. It has one meaningful runtime profile in day-to-day development (<code>Development</code>) plus a production-oriented Azure Container Apps configuration path.</p>
+<h2 id="configuration-sources">Configuration Sources</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Source</th><th>Type</th><th>Path/Location</th><th>Notes</th>
+</tr></thead><tbody>
+<tr><td><code>appsettings.json</code></td><td>Runtime application settings</td><td><code>PhotoAlbum\appsettings.json</code></td><td>Base settings for connection string, file upload limits, logging, and allowed hosts</td></tr>
+<tr><td><code>appsettings.Development.json</code></td><td>Runtime environment override</td><td><code>PhotoAlbum\appsettings.Development.json</code></td><td>Development-only logging and detailed error settings</td></tr>
+<tr><td><code>launchSettings.json</code></td><td>Local launch profile config</td><td><code>PhotoAlbum\Properties\launchSettings.json</code></td><td>Defines local URLs and <code>ASPNETCORE_ENVIRONMENT=Development</code></td></tr>
+<tr><td>Project user secrets identifier</td><td>Secret indirection</td><td><code>PhotoAlbum\PhotoAlbum.csproj</code></td><td>Declares <code>UserSecretsId</code>; no secrets file content is checked in</td></tr>
+<tr><td>Dockerfile</td><td>Container runtime config</td><td><code>Dockerfile</code></td><td>Sets container base images and exposes port <code>8080</code></td></tr>
+<tr><td>Azure Developer CLI manifest</td><td>Deployment config source</td><td><code>azure.yaml</code></td><td>Declares the <code>web</code> service, container app host, infra module, and deploy hooks</td></tr>
+<tr><td>Azure infra template</td><td>Externalized deployment settings</td><td><code>infra\main.json</code></td><td>Defines Azure SQL, storage, container app env vars, scaling, and identity-based registry access</td></tr>
+<tr><td>Azure infra parameters</td><td>Deployment parameter defaults</td><td><code>infra\main.parameters.json</code></td><td>Supplies environment/location placeholders and image name default</td></tr>
+<tr><td>Infra hooks</td><td>Deployment-time scripting</td><td><code>infra\hooks\predeploy.ps1</code>, <code>infra\hooks\postprovision.ps1</code></td><td>Configure managed identity registry access and wait for role propagation</td></tr>
+<tr><td>Example environment file</td><td>Operator input template</td><td><code>.env.example</code></td><td>Placeholder for Azure deployment environment values such as <code>RESOURCE_GROUP</code></td></tr>
+</tbody></table></div>
+<h2 id="build-profiles">Build Profiles</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Profile</th><th>Activation</th><th>Purpose</th><th>Key Dependencies/Plugins</th>
+</tr></thead><tbody>
+<tr><td><code>Debug</code></td><td>Manual or default local build configuration</td><td>Developer-oriented compilation and local debugging</td><td>Standard SDK tooling; no profile-specific package additions found</td></tr>
+<tr><td><code>Release</code></td><td>Manual <code>-c Release</code> selection and Docker publish flow</td><td>Optimized build and publish output</td><td>Used in <code>Dockerfile</code> build and publish stages</td></tr>
+</tbody></table></div>
+<h2 id="runtime-profiles">Runtime Profiles</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Profile</th><th>Activation Method</th><th>Config Files</th><th>Key Overrides</th>
+</tr></thead><tbody>
+<tr><td>Default</td><td>Implicit when no environment-specific override is supplied</td><td><code>appsettings.json</code></td><td>Base connection string, upload limits, upload path, log levels, allowed hosts</td></tr>
+<tr><td>Development</td><td><code>ASPNETCORE_ENVIRONMENT=Development</code> from launch profiles</td><td><code>appsettings.json</code> plus <code>appsettings.Development.json</code></td><td>Enables <code>DetailedErrors</code>, raises default and EF Core logging verbosity, uses local HTTP and HTTPS URLs</td></tr>
+<tr><td>Production</td><td><code>ASPNETCORE_ENVIRONMENT=Production</code> injected by Azure infra</td><td><code>appsettings.json</code> plus environment variables from <code>infra\main.json</code></td><td>Replaces database connection with <code>ConnectionStrings__DefaultConnection</code>; adds Azure blob-related environment variables</td></tr>
+<tr><td>Test</td><td><code>IsTestEnvironment</code> checked in code and in-memory config created by tests</td><td>In-memory configuration inside <code>PhotoServiceTests</code></td><td>Uses in-memory database provider semantics and custom upload path for tests</td></tr>
+</tbody></table></div>
+<h2 id="properties-inventory">Properties Inventory</h2>
+<h3 id="photoalbum"><code>PhotoAlbum</code></h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Property Key</th><th>Default</th><th>Profiles</th><th>Source</th>
+</tr></thead><tbody>
+<tr><td><code>ConnectionStrings:DefaultConnection</code></td><td><code>[MASKED]</code></td><td>Default, Development; overridden in Production</td><td><code>appsettings.json</code>; <code>ConnectionStrings__DefaultConnection</code> from <code>infra\main.json</code></td></tr>
+<tr><td><code>FileUpload:MaxFileSizeBytes</code></td><td><code>10485760</code></td><td>Default, Development, Test</td><td><code>appsettings.json</code>; duplicated in <code>PhotoServiceTests</code> in-memory config</td></tr>
+<tr><td><code>FileUpload:AllowedMimeTypes</code></td><td><code>image/jpeg</code>, <code>image/png</code>, <code>image/gif</code>, <code>image/webp</code></td><td>Default, Development, Test</td><td><code>appsettings.json</code>; duplicated in <code>PhotoServiceTests</code> in-memory config</td></tr>
+<tr><td><code>FileUpload:MaxFilesPerUpload</code></td><td><code>10</code></td><td>Default, Development</td><td><code>appsettings.json</code></td></tr>
+<tr><td><code>FileUpload:UploadPath</code></td><td><code>wwwroot/uploads</code></td><td>Default, Development; overridden in Test</td><td><code>appsettings.json</code>; in-memory override in <code>PhotoServiceTests</code></td></tr>
+<tr><td><code>Logging:LogLevel:Default</code></td><td><code>Information</code></td><td>Default; <code>Debug</code> in Development</td><td><code>appsettings.json</code>; overridden by <code>appsettings.Development.json</code></td></tr>
+<tr><td><code>Logging:LogLevel:Microsoft.AspNetCore</code></td><td><code>Warning</code></td><td>Default; <code>Information</code> in Development</td><td><code>appsettings.json</code>; overridden by <code>appsettings.Development.json</code></td></tr>
+<tr><td><code>Logging:LogLevel:Microsoft.EntityFrameworkCore</code></td><td>not set in base</td><td>Development</td><td><code>appsettings.Development.json</code></td></tr>
+<tr><td><code>DetailedErrors</code></td><td><code>true</code></td><td>Development</td><td><code>appsettings.Development.json</code></td></tr>
+<tr><td><code>AllowedHosts</code></td><td><code>*</code></td><td>Default, Development, Production</td><td><code>appsettings.json</code></td></tr>
+<tr><td><code>ASPNETCORE_ENVIRONMENT</code></td><td>not set in app config</td><td>Development, Production</td><td><code>launchSettings.json</code>; <code>infra\main.json</code></td></tr>
+<tr><td><code>IsTestEnvironment</code></td><td>not set in checked-in files</td><td>Test when supplied externally</td><td>Read by <code>Program.cs</code>; no file-backed default found</td></tr>
+<tr><td><code>AzureStorageBlob__Endpoint</code></td><td>not set in app config</td><td>Production deployment path</td><td><code>infra\main.json</code> container app env var</td></tr>
+<tr><td><code>AzureStorageBlob__ContainerName</code></td><td><code>photos</code> in Azure infra</td><td>Production deployment path</td><td><code>infra\main.json</code> container app env var</td></tr>
+</tbody></table></div>
+<h2 id="startup-parameters-resource-requirements">Startup Parameters & Resource Requirements</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>JVM/Runtime Options</th><th>Memory</th><th>Instance Count</th>
+</tr></thead><tbody>
+<tr><td><code>PhotoAlbum</code> local launch profile <code>http</code></td><td><code>applicationUrl=http://localhost:5134</code>; <code>ASPNETCORE_ENVIRONMENT=Development</code></td><td>Not specified</td><td>1 local process</td></tr>
+<tr><td><code>PhotoAlbum</code> local launch profile <code>https</code></td><td><code>applicationUrl=https://localhost:7055;http://localhost:5134</code>; <code>ASPNETCORE_ENVIRONMENT=Development</code></td><td>Not specified</td><td>1 local process</td></tr>
+<tr><td><code>PhotoAlbum</code> Azure Container App</td><td><code>targetPort=8080</code>; <code>ASPNETCORE_ENVIRONMENT=Production</code>; connection string and blob settings injected as env vars</td><td><code>1Gi</code> memory and <code>0.5</code> CPU</td><td><code>minReplicas=1</code>, <code>maxReplicas=3</code></td></tr>
+</tbody></table></div>
+<h2 id="startup-dependency-chain">Startup Dependency Chain</h2>
+<ol>
+<li>Azure provisioning creates supporting infrastructure declared in <code>infra\main.json</code>, including SQL, storage, registry, and Container Apps resources.</li>
+<li><code>infra\hooks\predeploy.ps1</code> configures the Container App to pull from the registry using its system-assigned managed identity.</li>
+<li><code>infra\hooks\postprovision.ps1</code> waits for the <code>AcrPull</code> role assignment to propagate before deployment proceeds.</li>
+<li>On application startup, <code>Program.cs</code> creates <code>wwwroot/uploads</code> if needed.</li>
+<li>Still during startup, <code>Program.cs</code> runs EF Core migrations unless <code>IsTestEnvironment</code> is true.</li>
+<li>The app starts serving requests only after startup completes; no dedicated health-check endpoint or readiness probe is defined in the application code.</li>
+</ol>
+<h2 id="secrets-sensitive-configuration">Secrets & Sensitive Configuration</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Secret Reference</th><th>Type</th><th>Storage (masked)</th>
+</tr></thead><tbody>
+<tr><td><code>ConnectionStrings:DefaultConnection</code></td><td>Database connection string</td><td><code>appsettings.json</code> for local development; env var override in Azure deployment path; shown as <code>[MASKED]</code></td></tr>
+<tr><td><code>UserSecretsId</code></td><td>Developer secret store binding</td><td><code>28fdd5b1-4b72-4763-98cc-ac5ebb3f280d</code> in project file; secret values not present in repo</td></tr>
+<tr><td><code>RESOURCE_GROUP</code></td><td>Deployment environment input</td><td>Placeholder only in <code>.env.example</code></td></tr>
+</tbody></table></div>
+<h3 id="secrets-provisioning-workflow">Secrets Provisioning Workflow</h3>
+<p>The checked-in application uses a non-secret LocalDB connection string for local execution and declares a <code>UserSecretsId</code> so developers can externalize additional secrets without committing them. In the Azure deployment path, <code>infra\main.json</code> injects <code>ConnectionStrings__DefaultConnection</code> and blob-related settings as Container App environment variables, while <code>predeploy.ps1</code> and <code>postprovision.ps1</code> configure and validate managed-identity access to the container registry. No Key Vault, Vault, sealed secrets, or other dedicated secret store references were found in the repository.</p>
+<h2 id="feature-flags">Feature Flags</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Flag Name</th><th>Default</th><th>Controlled By</th>
+</tr></thead><tbody>
+<tr><td>None detected</td><td>n/a</td><td>n/a</td></tr>
+</tbody></table></div>
+<h2 id="framework-runtime-versions">Framework & Runtime Versions</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Component</th><th>Version</th><th>Source</th>
+</tr></thead><tbody>
+<tr><td>.NET target framework</td><td><code>net9.0</code></td><td><code>PhotoAlbum\PhotoAlbum.csproj</code></td></tr>
+<tr><td>ASP.NET Core Web SDK</td><td>9.0 family implied by target framework and SDK</td><td><code>PhotoAlbum\PhotoAlbum.csproj</code></td></tr>
+<tr><td>Entity Framework Core SQL Server provider</td><td><code>9.0.9</code></td><td><code>PhotoAlbum\PhotoAlbum.csproj</code></td></tr>
+<tr><td>Entity Framework Core Design</td><td><code>9.0.9</code></td><td><code>PhotoAlbum\PhotoAlbum.csproj</code></td></tr>
+<tr><td>SixLabors.ImageSharp</td><td><code>3.1.11</code></td><td><code>PhotoAlbum\PhotoAlbum.csproj</code></td></tr>
+<tr><td>Test SDK</td><td><code>17.12.0</code></td><td><code>PhotoAlbum.Tests\PhotoAlbum.Tests.csproj</code></td></tr>
+<tr><td>xUnit</td><td><code>2.9.2</code></td><td><code>PhotoAlbum.Tests\PhotoAlbum.Tests.csproj</code></td></tr>
+<tr><td>ASP.NET Core MVC Testing</td><td><code>9.0.9</code></td><td><code>PhotoAlbum.Tests\PhotoAlbum.Tests.csproj</code></td></tr>
+<tr><td>EF Core InMemory</td><td><code>9.0.9</code></td><td><code>PhotoAlbum.Tests\PhotoAlbum.Tests.csproj</code></td></tr>
+<tr><td>Container base image</td><td><code>mcr.microsoft.com/dotnet/aspnet:9.0</code></td><td><code>Dockerfile</code></td></tr>
+<tr><td>Build image</td><td><code>mcr.microsoft.com/dotnet/sdk:9.0</code></td><td><code>Dockerfile</code></td></tr>
+</tbody></table></div></div>
+</div>
+<div id="tab-workflows" class="tab-panel">
+  <div class="fact-content"><h1 id="core-business-workflows">Core Business Workflows</h1>
+<p>PhotoAlbum lets users maintain a simple photo gallery: they upload pictures, browse them chronologically, inspect metadata, and remove unwanted items. The repository’s business behavior is centered on keeping file-system storage and metadata persistence reasonably consistent during upload and delete operations.</p>
+<h2 id="domain-entities">Domain Entities</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Entity</th><th>Service / Bounded Context</th><th>Description</th><th>Key Relationships</th>
+</tr></thead><tbody>
+<tr><td><code>Photo</code></td><td><code>PhotoAlbum</code> / Gallery Management</td><td>Represents a user-uploaded image plus the metadata needed to display and manage it</td><td>Participates in the gallery collection, detail view, delete flow, and indirect file-serving flow</td></tr>
+<tr><td>Gallery collection</td><td><code>PhotoAlbum</code> / Gallery Management</td><td>Ordered set of uploaded photos shown on the home page</td><td>Built from <code>Photo</code> records sorted newest first</td></tr>
+<tr><td>Upload result</td><td><code>PhotoAlbum</code> / Upload Processing</td><td>Outcome object used to report whether each attempted upload succeeded or failed</td><td>Connects upload validation and persistence outcomes back to the caller</td></tr>
+</tbody></table></div>
+<h2 id="service-to-domain-mapping">Service-to-Domain Mapping</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Domain Context</th><th>Owned Entities</th><th>External Dependencies</th>
+</tr></thead><tbody>
+<tr><td><code>PhotoAlbum</code></td><td>Gallery Management and Upload Processing</td><td><code>Photo</code>, gallery ordering, upload outcomes</td><td>SQL Server for metadata persistence, local uploads directory for image binaries, ImageSharp for dimension extraction</td></tr>
+</tbody></table></div>
+<h2 id="primary-workflows">Primary Workflows</h2>
+<h3 id="workflow-1-upload-photo-files-into-the-gallery">Workflow 1: Upload photo files into the gallery</h3>
+<p>Entry point: the browser posts to <code>/Index?handler=Upload</code> after drag-and-drop or file selection.</p>
+<ol>
+<li><code>IndexModel.OnPostUploadAsync</code> receives a batch of uploaded files and rejects the request with <code>400</code> if no files are supplied.</li>
+<li>Each file is passed to <code>PhotoService.UploadPhotoAsync</code>.</li>
+<li>The service applies business validation rules: only JPEG, PNG, GIF, and WebP are accepted; file size must not exceed 10 MB; zero-length files are rejected.</li>
+<li>For accepted files, the service generates a GUID-based storage name so the persisted file name is decoupled from the original upload name.</li>
+<li>The service attempts to inspect image dimensions with ImageSharp; failure to read dimensions is treated as non-fatal.</li>
+<li>The physical file is saved to the uploads directory.</li>
+<li>Metadata is persisted as a <code>Photo</code> record with UTC timestamp, size, MIME type, and optional dimensions.</li>
+<li>If database persistence fails after the file write, the service attempts a compensating delete of the saved file and returns a failure result.</li>
+<li><code>IndexModel</code> reloads gallery data for successful uploads and returns a JSON payload containing successful and failed items so the browser can update the gallery incrementally.</li>
+</ol>
+<h3 id="workflow-2-browse-the-gallery-and-inspect-one-photo">Workflow 2: Browse the gallery and inspect one photo</h3>
+<p>Entry points: <code>GET /</code> and <code>GET /Detail/{id?}</code>.</p>
+<ol>
+<li><code>IndexModel.OnGetAsync</code> loads all photos through <code>GetAllPhotosAsync</code>.</li>
+<li>The service returns photos in descending <code>UploadedAt</code> order, which becomes the gallery’s business ordering rule.</li>
+<li>Selecting a photo opens <code>DetailModel.OnGetAsync</code>, which reloads the ordered list and finds the current item.</li>
+<li>The detail page derives previous and next navigation targets from the same chronological ordering.</li>
+<li>The detail view computes display-only values such as formatted file size and aspect ratio for the selected photo.</li>
+</ol>
+<h3 id="workflow-3-delete-a-photo-from-the-gallery">Workflow 3: Delete a photo from the gallery</h3>
+<p>Entry point: delete form post from <code>/Detail/{id?}?handler=Delete</code>.</p>
+<ol>
+<li><code>DetailModel.OnPostDeleteAsync</code> invokes <code>DeletePhotoAsync</code>.</li>
+<li>The service locates the <code>Photo</code> record by id.</li>
+<li>It tries to remove the physical file first; file deletion errors are logged but do not block metadata deletion.</li>
+<li>The service removes the database row and saves changes.</li>
+<li>On success, the user is redirected to the gallery; on exception, the detail page is reopened with an error message in <code>TempData</code>.</li>
+</ol>
+<h2 id="cross-service-data-flows">Cross-Service Data Flows</h2>
+<p>No cross-service or cross-module data flows were found because the repository is a single deployable application. All orchestration is in-process: page models call <code>PhotoService</code>, which coordinates local file storage and SQL metadata persistence directly. There is no gateway aggregation, downstream API composition, or circuit-breaker fallback path in the current implementation.</p>
+<h2 id="business-workflow-sequence">Business Workflow Sequence</h2>
+<div class="mermaid">
+sequenceDiagram
+    participant User
+    participant IndexPage as "IndexModel"
+    participant PhotoSvc as "PhotoService"
+    participant ImageLib as "ImageSharp"
+    participant Files as "Uploads directory"
+    participant DB as "Photo table"
+
+    User->>IndexPage: Submit photo files
+    IndexPage->>PhotoSvc: Process each uploaded file
+    alt Validation fails
+        Note over PhotoSvc: Reject unsupported type, oversize file, or empty file
+        PhotoSvc-->>IndexPage: Upload result with error
+        IndexPage-->>User: JSON shows failed upload
+    else Validation succeeds
+        PhotoSvc->>ImageLib: Read dimensions when possible
+        ImageLib-->>PhotoSvc: Dimensions or non-fatal read failure
+        PhotoSvc->>Files: Save image using GUID file name
+        PhotoSvc->>DB: Create photo metadata record
+        alt Metadata save succeeds
+            DB-->>PhotoSvc: Stored photo id
+            PhotoSvc-->>IndexPage: Upload result success
+            IndexPage-->>User: JSON updates gallery with new photo
+        else Metadata save fails
+            PhotoSvc->>Files: Delete saved file as compensation
+            Note over PhotoSvc: Prevent orphaned file when metadata write fails
+            PhotoSvc-->>IndexPage: Upload result with error
+            IndexPage-->>User: JSON shows failed upload
+        end
+    end
+</div>
+<h2 id="business-rules-decision-logic">Business Rules & Decision Logic</h2>
+<ul>
+<li><strong>Validation rules</strong></li>
+<ul>
+<li>Only <code>image/jpeg</code>, <code>image/png</code>, <code>image/gif</code>, and <code>image/webp</code> uploads are accepted.</li>
+<li>Each uploaded file must be larger than zero bytes and no larger than <code>10 MB</code>.</li>
+<li>The gallery UI advertises the same allowed types and size limit client-side before upload.</li>
+</ul>
+<li><strong>Decision logic</strong></li>
+<ul>
+<li>Files are renamed with GUID-based storage names while retaining the original file name in metadata.</li>
+<li>Gallery and detail navigation order is determined by descending upload timestamp.</li>
+<li>Image dimension extraction is optional: the workflow continues even if ImageSharp cannot read the file.</li>
+</ul>
+<li><strong>State and integrity behavior</strong></li>
+<ul>
+<li>Upload creates a new <code>Photo</code> record only after the file has been written.</li>
+<li>If metadata persistence fails, the service deletes the just-written file as a compensating action.</li>
+<li>Delete removes the file first when possible, then removes the metadata row.</li>
+</ul>
+<li><strong>Cross-cutting concerns</strong></li>
+<ul>
+<li>There is no explicit transaction scope spanning file and database work; consistency is best-effort through compensating deletes.</li>
+<li>Errors are logged through ASP.NET Core logging, and user-facing failures are returned as JSON upload errors or <code>TempData</code> messages on delete.</li>
+<li>No business-level authorization rules are implemented; upload, browse, and delete flows are publicly reachable.</li>
+</ul>
+</ul></div>
+</div>
+<div id="tab-deps" class="tab-panel">
+  <div class="fact-content"><h1 id="dependency-map">Dependency Map</h1>
+<p>PhotoAlbum is a .NET 9 web application with three declared production dependencies in its app project plus a small, separate test toolchain. Most web framework functionality comes from the implicit ASP.NET Core shared framework provided by <code>Microsoft.NET.Sdk.Web</code>.</p>
+<h2 id="dependencies">Dependencies</h2>
+<div class="mermaid">
+flowchart LR
+    App["PhotoAlbum"]
+
+    subgraph Web["Web Frameworks"]
+        AspNet["ASP.NET Core shared framework net9.0"]
+    end
+
+    subgraph DB["Database / ORM"]
+        EFSql["EF Core SQL Server 9.0.9"]
+        EFDesign["EF Core Design 9.0.9"]
+    end
+
+    subgraph Util["Utilities"]
+        ImageSharp["ImageSharp 3.1.11"]
+    end
+
+    App -->|"web runtime"| Web
+    App -->|"persistence"| DB
+    App -->|"image metadata"| Util
+    EFDesign -.->|"design time support for"| EFSql
+</div>
+<h3 id="dependency-summary">Dependency Summary</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Category</th><th>Count</th><th>Key Libraries</th><th>Notes</th>
+</tr></thead><tbody>
+<tr><td>Web Frameworks</td><td>1</td><td>ASP.NET Core shared framework net9.0</td><td>Implicit from <code>Microsoft.NET.Sdk.Web</code>, not a <code>PackageReference</code></td></tr>
+<tr><td>Database / ORM</td><td>2</td><td>Microsoft.EntityFrameworkCore.SqlServer 9.0.9, Microsoft.EntityFrameworkCore.Design 9.0.9</td><td>Runtime SQL Server access plus design-time migrations tooling</td></tr>
+<tr><td>Utilities</td><td>1</td><td>SixLabors.ImageSharp 3.1.11</td><td>Used to inspect uploaded image dimensions</td></tr>
+</tbody></table></div>
+<h3 id="version-compatibility-risks">Version & Compatibility Risks</h3>
+<p>No obviously obsolete production packages are declared in the repository. The main compatibility consideration is that the app targets .NET 9 and EF Core 9, so runtime, SDK, and EF package versions need to stay aligned; the web framework is also implicit through the Web SDK rather than pinned as an explicit package.</p>
+<h3 id="notable-observations">Notable Observations</h3>
+<ul>
+<li>The application has a very small declared dependency surface, which lowers library migration complexity.</li>
+<li>Web stack functionality is mostly supplied by the implicit ASP.NET Core shared framework, so package inventories alone understate the actual runtime stack.</li>
+<li>All persistence concerns flow through the SQL Server EF Core provider; no alternative database, cache, messaging, security, or observability libraries are declared.</li>
+<li>Image processing is isolated to a single utility package, <code>SixLabors.ImageSharp</code>.</li>
+</ul>
+<h2 id="test-dependencies">Test Dependencies</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Framework</th><th>Version</th><th>Notes</th>
+</tr></thead><tbody>
+<tr><td>xUnit</td><td>2.9.2</td><td>Primary unit test framework</td></tr>
+<tr><td>xUnit Visual Studio runner</td><td>2.8.2</td><td>IDE and test host runner integration</td></tr>
+<tr><td>Microsoft.NET.Test.Sdk</td><td>17.12.0</td><td>.NET test execution infrastructure</td></tr>
+<tr><td>coverlet.collector</td><td>6.0.2</td><td>Code coverage data collector</td></tr>
+<tr><td>Microsoft.AspNetCore.Mvc.Testing</td><td>9.0.9</td><td>ASP.NET Core test host utilities</td></tr>
+<tr><td>Microsoft.EntityFrameworkCore.InMemory</td><td>9.0.9</td><td>In-memory provider used by service tests</td></tr>
+</tbody></table></div>
+<p>Total test-scope dependencies: 6</p>
+<p>The test stack is conventional and intentionally separate from the production dependency set. Tests rely on EF Core InMemory rather than a real SQL Server instance, so persistence behavior is validated at a unit-test level rather than with full relational integration coverage.</p></div>
+</div>
+<div id="tab-data" class="tab-panel">
+  <div class="fact-content"><h1 id="data-architecture-persistence-layer">Data Architecture & Persistence Layer</h1>
+<p>The data layer is intentionally small: one persisted entity is managed through Entity Framework Core, with SQL Server as the primary database provider and the local file system used for image bytes. Tests substitute the relational provider with EF Core InMemory to validate service behavior without a real database.</p>
+<h2 id="database-configuration">Database Configuration</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service/Module</th><th>DB Type</th><th>Profile</th><th>Driver</th><th>Connection</th><th>Migration Tool</th>
+</tr></thead><tbody>
+<tr><td><code>PhotoAlbum</code></td><td>SQL Server LocalDB by default; Azure SQL compatible in deployment templates</td><td>Default and Development</td><td><code>Microsoft.EntityFrameworkCore.SqlServer</code> 9.0.9</td><td><code>ConnectionStrings:DefaultConnection</code> from <code>appsettings.json</code>, overridden by <code>ConnectionStrings__DefaultConnection</code> in Azure Container Apps</td><td>EF Core migrations in <code>PhotoAlbum\Migrations</code>, executed at startup when <code>IsTestEnvironment</code> is false</td></tr>
+<tr><td><code>PhotoAlbum.Tests</code></td><td>In-memory database</td><td>Test</td><td><code>Microsoft.EntityFrameworkCore.InMemory</code> 9.0.9</td><td>Per-test ephemeral database name created in code</td><td>None</td></tr>
+</tbody></table></div>
+<h2 id="data-ownership-per-service">Data Ownership per Service</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Tables Owned</th><th>ORM Framework</th><th>Caching</th><th>Notes</th>
+</tr></thead><tbody>
+<tr><td><code>PhotoAlbum</code></td><td><code>Photos</code></td><td>EF Core 9</td><td>None</td><td>Database stores metadata only; image binaries are stored separately under <code>wwwroot/uploads</code></td></tr>
+</tbody></table></div>
+<h2 id="entity-model">Entity Model</h2>
+<div class="mermaid">
+erDiagram
+    Photo {
+        int Id PK
+        string OriginalFileName
+        string StoredFileName
+        string FilePath
+        long FileSize
+        string MimeType
+        datetime UploadedAt
+        int Width
+        int Height
+    }
+</div>
+<h2 id="key-repository-methods">Key Repository Methods</h2>
+<p>No dedicated repository interfaces were found in the repository; <code>PhotoService</code> works directly against <code>PhotoAlbumContext</code> and its <code>Photos</code> set.</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Repository</th><th>Notable Methods</th><th>Purpose</th>
+</tr></thead><tbody>
+<tr><td><code>PhotoAlbum</code></td><td><code>PhotoAlbumContext.Photos</code> in <code>PhotoAlbum\Data\PhotoAlbumContext.cs</code></td><td><code>OrderByDescending(p => p.UploadedAt).ToListAsync()</code></td><td>Returns the gallery in newest-first order</td></tr>
+<tr><td><code>PhotoAlbum</code></td><td><code>PhotoAlbumContext.Photos</code> in <code>PhotoAlbum\Data\PhotoAlbumContext.cs</code></td><td><code>FindAsync(id)</code></td><td>Retrieves one photo for detail display and file delivery</td></tr>
+<tr><td><code>PhotoAlbum</code></td><td><code>PhotoAlbumContext.Photos</code> in <code>PhotoAlbum\Data\PhotoAlbumContext.cs</code></td><td><code>AddAsync(photo)</code> plus <code>SaveChangesAsync()</code></td><td>Persists newly uploaded photo metadata after the file write succeeds</td></tr>
+<tr><td><code>PhotoAlbum</code></td><td><code>PhotoAlbumContext.Photos</code> in <code>PhotoAlbum\Data\PhotoAlbumContext.cs</code></td><td><code>Remove(photo)</code> plus <code>SaveChangesAsync()</code></td><td>Deletes photo metadata after delete orchestration starts</td></tr>
+</tbody></table></div>
+<h2 id="caching-strategy">Caching Strategy</h2>
+<p>No application-level data cache, distributed cache, or ORM second-level cache is configured in the repository. The only cache-related behavior is HTTP response caching for static content: <code>Program.cs</code> adds <code>Cache-Control: public,max-age=3600</code> for static files, and <code>PhotoFileModel</code> returns long-lived browser caching headers plus an <code>ETag</code> for served image binaries. Those headers improve client-side asset reuse but do not introduce a persistence-layer cache.</p>
+<h2 id="data-ownership-boundaries">Data Ownership Boundaries</h2>
+<p>The repository implements a single application boundary, not multiple services. One app owns one logical data store for metadata (<code>Photos</code> in SQL Server) and one local file-store boundary for binary image content (<code>wwwroot/uploads</code>). All reads and writes flow through <code>PhotoService</code>; there is no cross-service database access, no shared database between independent deployables, and no CQRS split between write and read models.</p>
+<p>During upload, persistence is coordinated in two steps: the binary file is written to disk, then the <code>Photo</code> row is inserted into SQL Server. If the database save fails, the service attempts a compensating delete of the saved file to reduce orphaned storage. Delete follows the reverse path: the service tries to delete the file and then removes the database row, continuing with database deletion even if file cleanup fails.</p>
+<h3 id="data-classification-sensitivity">Data Classification & Sensitivity</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Entity</th><th>Sensitive Fields</th><th>Classification (PII/PHI/PCI/None)</th><th>Controls in Place</th>
+</tr></thead><tbody>
+<tr><td><code>Photo</code></td><td><code>OriginalFileName</code>; associated uploaded image content stored on disk may contain personal imagery</td><td>PII</td><td>No encryption-at-rest, masking, or field-level access controls are configured in the repository</td></tr>
+</tbody></table></div></div>
+</div>
+<p class="footer">Your feedback is invaluable &mdash; <a href="https://aka.ms/ghcp-appmod/feedback">Share feedback</a></p>
+<script>
+function toggleRow(rowId, triggerRow) {
+  var detail = document.getElementById(rowId);
+  var btn = document.getElementById('btn-' + rowId);
+  if (!detail) return;
+  var visible = detail.style.display !== 'none';
+  detail.style.display = visible ? 'none' : 'table-row';
+  if (btn) btn.classList.toggle('open', !visible);
+}
+(function() {
+  var nav = document.querySelector('.tab-nav');
+  if (!nav) return;
+  nav.addEventListener('click', function(e) {
+    var btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    var targetId = btn.getAttribute('data-tab');
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    var panel = document.getElementById(targetId);
+    if (panel) {
+      panel.classList.add('active');
+      if (window.__mermaidReady) { window.__renderMermaidIn(panel); }
+    }
+  });
+})();
+
+// ── Diagram lightbox ────────────────────────────────────────
+(function() {
+  var lightbox = document.getElementById('diagram-lightbox');
+  var inner = document.getElementById('diagram-lightbox-inner');
+  var closeBtn = document.getElementById('diagram-lightbox-close');
+  if (!lightbox || !inner || !closeBtn) return;
+
+  var scale = 1;
+  var translateX = 0;
+  var translateY = 0;
+  var isDragging = false;
+  var dragStartX = 0;
+  var dragStartY = 0;
+
+  function applyTransform() {
+    var svg = inner.querySelector('svg');
+    if (svg) {
+      svg.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ')';
+      svg.style.transformOrigin = 'center center';
+      svg.style.transition = 'none';
+    }
+  }
+
+  function resetTransform() {
+    scale = 1; translateX = 0; translateY = 0;
+    applyTransform();
+  }
+
+  function openLightbox(svgEl) {
+    inner.innerHTML = svgEl.outerHTML;
+    var injected = inner.querySelector('svg');
+    if (injected) {
+      injected.removeAttribute('width');
+      injected.removeAttribute('height');
+      injected.style.cursor = 'grab';
+    }
+    resetTransform();
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    inner.innerHTML = '';
+    document.body.style.overflow = '';
+    resetTransform();
+  }
+
+  inner.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    var delta = e.deltaY > 0 ? 0.9 : 1.1;
+    scale = Math.min(Math.max(scale * delta, 0.3), 8);
+    applyTransform();
+  }, { passive: false });
+
+  inner.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    isDragging = true;
+    dragStartX = e.clientX - translateX;
+    dragStartY = e.clientY - translateY;
+    var svg = inner.querySelector('svg');
+    if (svg) { svg.style.cursor = 'grabbing'; }
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+    translateX = e.clientX - dragStartX;
+    translateY = e.clientY - dragStartY;
+    applyTransform();
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (!isDragging) return;
+    isDragging = false;
+    var svg = inner.querySelector('svg');
+    if (svg) { svg.style.cursor = 'grab'; }
+  });
+
+  inner.addEventListener('dblclick', function() { resetTransform(); });
+
+  document.addEventListener('click', function(e) {
+    var card = e.target.closest('.mermaid');
+    if (!card) return;
+    if (e.target.closest('.diagram-lightbox-close')) return;
+    var svg = card.querySelector('svg');
+    if (svg) { openLightbox(svg); }
+  });
+
+  closeBtn.addEventListener('click', closeLightbox);
+
+  lightbox.addEventListener('click', function(e) {
+    if (e.target === lightbox) { closeLightbox(); }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeLightbox(); }
+  });
+})();
+
+var _currentTarget = '';
+
+function toggleMultiSelect(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  document.querySelectorAll('.multi-select.open').forEach(function(ms) { if (ms.id !== id) ms.classList.remove('open'); });
+  el.classList.toggle('open');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.multi-select')) {
+    document.querySelectorAll('.multi-select.open').forEach(function(ms) { ms.classList.remove('open'); });
+  }
+});
+
+function getMultiSelectValues(msId) {
+  var el = document.getElementById(msId);
+  if (!el) return [];
+  var checked = el.querySelectorAll('input[type=checkbox]:checked');
+  var vals = [];
+  for (var i = 0; i < checked.length; i++) vals.push(checked[i].value);
+  return vals;
+}
+
+function onMultiSelectChange(msId, label) {
+  var el = document.getElementById(msId);
+  if (!el) return;
+  var vals = getMultiSelectValues(msId);
+  var total = el.querySelectorAll('input[type=checkbox]').length;
+  var btn = el.querySelector('.multi-select-btn');
+  if (btn) {
+    btn.textContent = vals.length > 0 && vals.length < total ? label + ' (' + vals.length + ')' : label;
+  }
+  applyFilters();
+}
+
+function applyFilters() {
+  var selectedDomains = getMultiSelectValues('domain-ms');
+  var selectedCrits = getMultiSelectValues('criticality-ms');
+
+  var sections = document.querySelectorAll('.issue-section');
+  for (var i = 0; i < sections.length; i++) {
+    var domain = sections[i].getAttribute('data-domain');
+    sections[i].style.display = (selectedDomains.length === 0 || selectedDomains.indexOf(domain) >= 0) ? '' : 'none';
+  }
+
+  var rows = document.querySelectorAll('.issue-row');
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var section = row.closest('.issue-section');
+    if (section && section.style.display === 'none') {
+      row.style.display = 'none';
+      var next = row.nextElementSibling;
+      if (next && next.classList.contains('detail-row')) next.style.display = 'none';
+      continue;
+    }
+
+    var show = true;
+    if (_currentTarget && row.hasAttribute('data-targets')) {
+      var targetsStr = row.getAttribute('data-targets');
+      if (targetsStr && targetsStr !== '{}') {
+        try {
+          var targets = JSON.parse(targetsStr);
+          if (Object.keys(targets).length > 0 && !targets[_currentTarget]) {
+            show = false;
+          }
+        } catch(e) {}
+      }
+    }
+
+    if (show && selectedCrits.length > 0) {
+      var crit = row.getAttribute('data-criticality');
+      if (selectedCrits.indexOf(crit) < 0) show = false;
+    }
+
+    row.style.display = show ? '' : 'none';
+    var nextRow = row.nextElementSibling;
+    if (nextRow && nextRow.classList.contains('detail-row')) {
+      if (!show) nextRow.style.display = 'none';
+    }
+  }
+}
+
+function clearAllFilters() {
+  document.querySelectorAll('.multi-select input[type=checkbox]').forEach(function(cb) { cb.checked = false; });
+  var domainBtn = document.querySelector('#domain-ms .multi-select-btn');
+  if (domainBtn) domainBtn.textContent = 'Domain';
+  var critBtn = document.querySelector('#criticality-ms .multi-select-btn');
+  if (critBtn) critBtn.textContent = 'Criticality';
+  applyFilters();
+}
+
+function onTargetChange(targetId) {
+  _currentTarget = targetId;
+  var rows = document.querySelectorAll('.issue-row[data-targets]');
+  var totalEffort = 0;
+  var domainCrits = {};
+
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var targets = JSON.parse(row.getAttribute('data-targets'));
+    var section = row.closest('.issue-section');
+    var domain = section ? section.getAttribute('data-domain') : '';
+
+    if (!targets || Object.keys(targets).length === 0) {
+      var sp = parseFloat(row.querySelector('.sp-cell').textContent) || 0;
+      totalEffort += sp;
+      if (!domainCrits[domain]) domainCrits[domain] = {mandatory:0,potential:0,optional:0};
+      var crit = row.getAttribute('data-criticality') || 'optional';
+      domainCrits[domain][crit] = (domainCrits[domain][crit] || 0) + 1;
+      continue;
+    }
+
+    var override = targets[targetId];
+    if (!override) {
+      continue;
+    }
+
+    var newSeverity = (override.severity || row.getAttribute('data-default-severity') || '').toLowerCase();
+    row.setAttribute('data-criticality', newSeverity);
+    var critCell = row.querySelector('.crit-cell');
+    if (critCell) {
+      var critText = newSeverity === 'mandatory' ? 'Mandatory' : newSeverity === 'potential' ? 'Potential' : 'Optional';
+      var cssClass = newSeverity === 'mandatory' ? 'crit-square-mandatory' : newSeverity === 'potential' ? 'crit-square-potential' : 'crit-square-optional';
+      critCell.innerHTML = '<span class="crit-label"><span class="crit-square ' + cssClass + '"></span>' + critText + '</span>';
+    }
+
+    var newEffort = override.effort !== undefined ? override.effort : parseFloat(row.getAttribute('data-default-effort')) || 0;
+    var spCell = row.querySelector('.sp-cell');
+    if (spCell) spCell.textContent = newEffort;
+    totalEffort += newEffort;
+
+    if (!domainCrits[domain]) domainCrits[domain] = {mandatory:0,potential:0,optional:0};
+    domainCrits[domain][newSeverity] = (domainCrits[domain][newSeverity] || 0) + 1;
+  }
+
+  var secSection = document.querySelector('.issue-section[data-domain="security"]');
+  if (secSection) {
+    var secRows = secSection.querySelectorAll('.issue-row');
+    for (var j = 0; j < secRows.length; j++) {
+      if (!secRows[j].hasAttribute('data-targets') || secRows[j].getAttribute('data-targets') === '') {
+        var sp = parseFloat(secRows[j].querySelector('.sp-cell').textContent) || 0;
+        totalEffort += sp;
+        if (!domainCrits['security']) domainCrits['security'] = {mandatory:0,potential:0,optional:0};
+        var sc = secRows[j].getAttribute('data-criticality') || 'optional';
+        domainCrits['security'][sc] = (domainCrits['security'][sc] || 0) + 1;
+      }
+    }
+  }
+
+  var label = totalEffort < 20 ? 'S' : totalEffort < 50 ? 'M' : totalEffort < 100 ? 'L' : 'XL';
+  var effortEl = document.getElementById('effort-display');
+  if (effortEl) effortEl.textContent = label + ' (total story points: ' + totalEffort + ')';
+
+  updateDonuts(domainCrits);
+  applyFilters();
+}
+
+function updateDonuts(domainCrits) {
+  var container = document.getElementById('donut-container');
+  if (!container) return;
+  container.innerHTML = '';
+  var domainNames = {'cloud-readiness':'Cloud Readiness','java-upgrade':'Java Upgrade','dotnet-upgrade':'DotNET Upgrade','security':'Security'};
+  var domainOrder = ['cloud-readiness','java-upgrade','dotnet-upgrade','security'];
+  for (var d = 0; d < domainOrder.length; d++) {
+    var key = domainOrder[d];
+    var c = domainCrits[key];
+    if (!c || (c.mandatory + c.potential + c.optional) === 0) continue;
+    var total = c.mandatory + c.potential + c.optional;
+    var div = document.createElement('div');
+    div.className = 'domain-summary-item';
+    div.innerHTML = buildDonutSvg(c.mandatory, c.potential, c.optional) +
+      '<h3>' + domainNames[key] + '</h3>' +
+      '<div class="count">' + total + ' issue' + (total !== 1 ? 's' : '') + '</div>';
+    container.appendChild(div);
+  }
+}
+
+function buildDonutSvg(m, p, o) {
+  var total = m + p + o;
+  if (total === 0) return '<svg viewBox="0 0 100 100" width="100" height="100" style="display:block;margin:0 auto;"><circle cx="50" cy="50" r="35" fill="none" stroke="#d0d7de" stroke-width="15" opacity="0.5"/></svg>';
+  var r = 35, circ = 2 * Math.PI * r, offset = 0;
+  var svg = '<svg viewBox="0 0 100 100" width="100" height="100" style="display:block;margin:0 auto;transform:rotate(-90deg);">';
+  var segs = [{c:m,color:'var(--color-mandatory)'},{c:p,color:'var(--color-potential)'},{c:o,color:'var(--color-optional)'}];
+  for (var i = 0; i < segs.length; i++) {
+    if (segs[i].c === 0) continue;
+    var segLen = (segs[i].c / total) * circ;
+    var gap = total > segs[i].c ? 1.5 : 0;
+    var drawLen = Math.max(segLen - gap, 0.5);
+    svg += '<circle cx="50" cy="50" r="' + r + '" fill="none" stroke="' + segs[i].color + '" stroke-width="15" stroke-dasharray="' + drawLen.toFixed(2) + ' ' + circ.toFixed(2) + '" stroke-dashoffset="' + (-offset).toFixed(2) + '"/>';
+    offset += segLen;
+  }
+  svg += '</svg>';
+  return svg;
+}
+</script>
+<script>document.addEventListener('DOMContentLoaded', function() { onTargetChange('AppService.Windows'); });</script>
+</div></body></html>

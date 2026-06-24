@@ -1,0 +1,382 @@
+{
+  "packageGovernance": {
+    "totalDistinctPackages": 9,
+    "totalVersionDriftInstances": 0,
+    "targetFramework": "net10.0",
+    "packages": [
+      {
+        "name": "coverlet.collector",
+        "totalProjectCount": 1,
+        "distinctVersionCount": 1,
+        "recommendedVersion": "",
+        "isCompatible": true,
+        "description": "",
+        "versions": [
+          {
+            "version": "6.0.2",
+            "projects": [
+              "PhotoAlbum.Tests"
+            ],
+            "isRecommended": false
+          }
+        ],
+        "upgrade": {
+          "newVersion": ""
+        }
+      },
+      {
+        "name": "Microsoft.AspNetCore.Mvc.Testing",
+        "totalProjectCount": 1,
+        "distinctVersionCount": 1,
+        "recommendedVersion": "10.0.9",
+        "isCompatible": true,
+        "description": "NuGet package upgrade is recommended",
+        "versions": [
+          {
+            "version": "9.0.9",
+            "projects": [
+              "PhotoAlbum.Tests"
+            ],
+            "isRecommended": false
+          }
+        ],
+        "upgrade": {
+          "newVersion": "10.0.9"
+        }
+      },
+      {
+        "name": "Microsoft.EntityFrameworkCore.Design",
+        "totalProjectCount": 1,
+        "distinctVersionCount": 1,
+        "recommendedVersion": "10.0.9",
+        "isCompatible": true,
+        "description": "NuGet package upgrade is recommended",
+        "versions": [
+          {
+            "version": "9.0.9",
+            "projects": [
+              "PhotoAlbum"
+            ],
+            "isRecommended": false
+          }
+        ],
+        "upgrade": {
+          "newVersion": "10.0.9"
+        }
+      },
+      {
+        "name": "Microsoft.EntityFrameworkCore.InMemory",
+        "totalProjectCount": 1,
+        "distinctVersionCount": 1,
+        "recommendedVersion": "10.0.9",
+        "isCompatible": true,
+        "description": "NuGet package upgrade is recommended",
+        "versions": [
+          {
+            "version": "9.0.9",
+            "projects": [
+              "PhotoAlbum.Tests"
+            ],
+            "isRecommended": false
+          }
+        ],
+        "upgrade": {
+          "newVersion": "10.0.9"
+        }
+      },
+      {
+        "name": "Microsoft.EntityFrameworkCore.SqlServer",
+        "totalProjectCount": 1,
+        "distinctVersionCount": 1,
+        "recommendedVersion": "10.0.9",
+        "isCompatible": true,
+        "description": "NuGet package upgrade is recommended",
+        "versions": [
+          {
+            "version": "9.0.9",
+            "projects": [
+              "PhotoAlbum"
+            ],
+            "isRecommended": false
+          }
+        ],
+        "upgrade": {
+          "newVersion": "10.0.9"
+        }
+      },
+      {
+        "name": "Microsoft.NET.Test.Sdk",
+        "totalProjectCount": 1,
+        "distinctVersionCount": 1,
+        "recommendedVersion": "",
+        "isCompatible": true,
+        "description": "",
+        "versions": [
+          {
+            "version": "17.12.0",
+            "projects": [
+              "PhotoAlbum.Tests"
+            ],
+            "isRecommended": false
+          }
+        ],
+        "upgrade": {
+          "newVersion": ""
+        }
+      },
+      {
+        "name": "SixLabors.ImageSharp",
+        "totalProjectCount": 1,
+        "distinctVersionCount": 1,
+        "recommendedVersion": "",
+        "isCompatible": true,
+        "description": "",
+        "versions": [
+          {
+            "version": "3.1.11",
+            "projects": [
+              "PhotoAlbum"
+            ],
+            "isRecommended": false
+          }
+        ],
+        "upgrade": {
+          "newVersion": ""
+        }
+      },
+      {
+        "name": "xunit",
+        "totalProjectCount": 1,
+        "distinctVersionCount": 1,
+        "recommendedVersion": "",
+        "isCompatible": false,
+        "description": "NuGet package is deprecated",
+        "versions": [
+          {
+            "version": "2.9.2",
+            "projects": [
+              "PhotoAlbum.Tests"
+            ],
+            "isRecommended": false
+          }
+        ],
+        "upgrade": {
+          "newVersion": ""
+        }
+      },
+      {
+        "name": "xunit.runner.visualstudio",
+        "totalProjectCount": 1,
+        "distinctVersionCount": 1,
+        "recommendedVersion": "",
+        "isCompatible": true,
+        "description": "",
+        "versions": [
+          {
+            "version": "2.8.2",
+            "projects": [
+              "PhotoAlbum.Tests"
+            ],
+            "isRecommended": false
+          }
+        ],
+        "upgrade": {
+          "newVersion": ""
+        }
+      }
+    ]
+  },
+  "projects": [
+    {
+      "name": "PhotoAlbum",
+      "path": "PhotoAlbum\\PhotoAlbum.csproj",
+      "isSdk": true,
+      "currentFrameworks": [
+        "net9.0"
+      ],
+      "targetFramework": "net10.0",
+      "dependencies": {
+        "packages": [
+          {
+            "name": "Microsoft.EntityFrameworkCore.Design",
+            "version": "9.0.9",
+            "isTransitive": false,
+            "isGlobal": false,
+            "isImplicit": false,
+            "definedIn": [
+              {
+                "path": "PhotoAlbum\\PhotoAlbum.csproj"
+              }
+            ],
+            "description": "NuGet package upgrade is recommended",
+            "compatibility": "valid",
+            "recommendedVersion": "10.0.9",
+            "upgrade": {
+              "newVersion": "10.0.9"
+            }
+          },
+          {
+            "name": "Microsoft.EntityFrameworkCore.SqlServer",
+            "version": "9.0.9",
+            "isTransitive": false,
+            "isGlobal": false,
+            "isImplicit": false,
+            "definedIn": [
+              {
+                "path": "PhotoAlbum\\PhotoAlbum.csproj"
+              }
+            ],
+            "description": "NuGet package upgrade is recommended",
+            "compatibility": "valid",
+            "recommendedVersion": "10.0.9",
+            "upgrade": {
+              "newVersion": "10.0.9"
+            }
+          },
+          {
+            "name": "SixLabors.ImageSharp",
+            "version": "3.1.11",
+            "isTransitive": false,
+            "isGlobal": false,
+            "isImplicit": false,
+            "definedIn": [
+              {
+                "path": "PhotoAlbum\\PhotoAlbum.csproj"
+              }
+            ],
+            "description": "",
+            "compatibility": "valid",
+            "recommendedVersion": ""
+          }
+        ],
+        "assemblies": [],
+        "projectReferences": [],
+        "frameworkReferences": []
+      }
+    },
+    {
+      "name": "PhotoAlbum.Tests",
+      "path": "PhotoAlbum.Tests\\PhotoAlbum.Tests.csproj",
+      "isSdk": true,
+      "currentFrameworks": [
+        "net9.0"
+      ],
+      "targetFramework": "net10.0",
+      "dependencies": {
+        "packages": [
+          {
+            "name": "coverlet.collector",
+            "version": "6.0.2",
+            "isTransitive": false,
+            "isGlobal": false,
+            "isImplicit": false,
+            "definedIn": [
+              {
+                "path": "PhotoAlbum.Tests\\PhotoAlbum.Tests.csproj"
+              }
+            ],
+            "description": "",
+            "compatibility": "valid",
+            "recommendedVersion": ""
+          },
+          {
+            "name": "Microsoft.AspNetCore.Mvc.Testing",
+            "version": "9.0.9",
+            "isTransitive": false,
+            "isGlobal": false,
+            "isImplicit": false,
+            "definedIn": [
+              {
+                "path": "PhotoAlbum.Tests\\PhotoAlbum.Tests.csproj"
+              }
+            ],
+            "description": "NuGet package upgrade is recommended",
+            "compatibility": "valid",
+            "recommendedVersion": "10.0.9",
+            "upgrade": {
+              "newVersion": "10.0.9"
+            }
+          },
+          {
+            "name": "Microsoft.EntityFrameworkCore.InMemory",
+            "version": "9.0.9",
+            "isTransitive": false,
+            "isGlobal": false,
+            "isImplicit": false,
+            "definedIn": [
+              {
+                "path": "PhotoAlbum.Tests\\PhotoAlbum.Tests.csproj"
+              }
+            ],
+            "description": "NuGet package upgrade is recommended",
+            "compatibility": "valid",
+            "recommendedVersion": "10.0.9",
+            "upgrade": {
+              "newVersion": "10.0.9"
+            }
+          },
+          {
+            "name": "Microsoft.NET.Test.Sdk",
+            "version": "17.12.0",
+            "isTransitive": false,
+            "isGlobal": false,
+            "isImplicit": false,
+            "definedIn": [
+              {
+                "path": "PhotoAlbum.Tests\\PhotoAlbum.Tests.csproj"
+              }
+            ],
+            "description": "",
+            "compatibility": "valid",
+            "recommendedVersion": ""
+          },
+          {
+            "name": "xunit",
+            "version": "2.9.2",
+            "isTransitive": false,
+            "isGlobal": false,
+            "isImplicit": false,
+            "definedIn": [
+              {
+                "path": "PhotoAlbum.Tests\\PhotoAlbum.Tests.csproj"
+              }
+            ],
+            "description": "NuGet package is deprecated",
+            "compatibility": "newVersionNeeded",
+            "recommendedVersion": ""
+          },
+          {
+            "name": "xunit.runner.visualstudio",
+            "version": "2.8.2",
+            "isTransitive": false,
+            "isGlobal": false,
+            "isImplicit": false,
+            "definedIn": [
+              {
+                "path": "PhotoAlbum.Tests\\PhotoAlbum.Tests.csproj"
+              }
+            ],
+            "description": "",
+            "compatibility": "valid",
+            "recommendedVersion": ""
+          }
+        ],
+        "assemblies": [],
+        "projectReferences": [
+          {
+            "name": "PhotoAlbum",
+            "isTransitive": false,
+            "definedIn": [
+              {
+                "path": "PhotoAlbum.Tests\\PhotoAlbum.Tests.csproj"
+              }
+            ],
+            "referencedProjectPath": "PhotoAlbum\\PhotoAlbum.csproj",
+            "compatibility": "valid"
+          }
+        ],
+        "frameworkReferences": []
+      }
+    }
+  ]
+}
